@@ -6,6 +6,10 @@ from datetime import datetime
 
 from mycrew import Mytestcrewa1
 
+### disable crewai telemetry!
+import os
+os.environ['OTEL_SDK_DISABLED'] = 'true'
+
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
 # This main file is intended to be a way for you to run your
