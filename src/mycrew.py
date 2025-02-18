@@ -23,10 +23,10 @@ class Mytestcrewa1():
 		if isinstance(output, ToolResult):
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
 		elif isinstance(output, AgentAction):
-			print(f"action output: \nThought: {output.thought} \nTool: {output.tool}\nTool_input: {output.tool_input}\nText: {output.text}\nresult: {output.result}")
+			print(f"action output: \nCLBK_RES_Thought: {output.thought} \nCLBK_RES_Tool: {output.tool}\nCLBK_RES_Tool_input: {output.tool_input}\nCLBK_RES_Text: {output.text}\nCLBK_RES_result: {output.result}")
 
 		elif isinstance(output, AgentFinish):
-			print(f"agent finish: \nThought: {output.thought}\nOutput: {output.output}\nText: {output.text}")
+			print(f"agent finish: \nCLBK_RES_Thought: {output.thought}\nCLBK_RES_Output: {output.output}\nCLBK_RES_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 
 	def my_reporter_stepCallback(self, output: Task):
@@ -34,10 +34,10 @@ class Mytestcrewa1():
 		if isinstance(output, ToolResult):
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
 		elif isinstance(output, AgentAction):
-			print(f"action output: \nThought: {output.thought} \nTool: {output.tool}\nTool_input: {output.tool_input}\nText: {output.text}\nresult: {output.result}")
+			print(f"action output: \nCLBK_REP_Action_Thought: {output.thought} \nCLBK_REP_Action_Tool: {output.tool}\nCLBK_REP_Tool_input: {output.tool_input}\nCLBK_REP_Action_Text: {output.text}\nCLBK_REP_Action_result: {output.result}")
 
 		elif isinstance(output, AgentFinish):
-			print(f"agent finish: \nThought: {output.thought}\nOutput: {output.output}\nText: {output.text}")
+			print(f"agent finish: \nCLBK_REP_Finish_Thought: {output.thought}\nCLBK_REP_Finish_Output: {output.output}\nCLBK_REP_Finish_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 	try:
 		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.1)
