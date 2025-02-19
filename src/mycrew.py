@@ -2,7 +2,7 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task, callback
 from crewai.agents.crew_agent_executor import ToolResult
 from crewai.agents.parser import AgentAction, AgentFinish
-from langchain_community.tools import DuckDuckGoSearchRun #uv pip install langchain_community duckduckgo-search
+from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults #uv pip install langchain_community duckduckgo-search
 from crewai.tools import BaseTool
 
 # If you want to run a snippet of code before or after the crew starts, 
