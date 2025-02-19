@@ -2,10 +2,28 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task, callback
 from crewai.agents.crew_agent_executor import ToolResult
 from crewai.agents.parser import AgentAction, AgentFinish
+from langchain_community.tools import DuckDuckGoSearchRun #uv pip install langchain_community duckduckgo-search
+from crewai.tools import BaseTool
 
 # If you want to run a snippet of code before or after the crew starts, 
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+
+class myDuckDuckGoSearchTool(BaseTool):
+    name: str = "DuckDuckGo Search"
+    description: str = "Useful for finding up-to-date information from the web."
+
+    def _run(self, query: str) -> str:
+            # Ensure the DuckDuckGoSearchRun is invoked properly.
+            duckduckgo_tool = DuckDuckGoSearchRun()
+            response = duckduckgo_tool.invoke(query)
+            print(f"DDG_Response: {response}")
+            return response
+    	
+    def _get_tool(self):
+        # Create an instance of the tool when needed
+        return myDuckDuckGoSearchTool()
+
 
 @CrewBase
 class Mytestcrewa1():
@@ -59,7 +77,8 @@ class Mytestcrewa1():
 			config=self.agents_config['researcher'],
 			verbose=True,
 			step_callback=self.my_researcher_stepCallback,
-			llm=self.myllm_r1_d_qwen
+			tools=[myDuckDuckGoSearchTool()],
+			llm=self.myllm_llama3_8b
 		)
 
 	@agent
@@ -68,6 +87,7 @@ class Mytestcrewa1():
 			config=self.agents_config['reporting_analyst'],
 			verbose=True,
 			step_callback=self.my_reporter_stepCallback,
+			tools=[myDuckDuckGoSearchTool()],
 			llm=self.myllm_llama3_8b
 		)
 
