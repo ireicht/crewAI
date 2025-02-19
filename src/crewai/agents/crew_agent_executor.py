@@ -99,6 +99,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
         self.ask_for_human_input = bool(inputs.get("ask_for_human_input", False))
 
         try:
+            print(f"\nINVOKING LOOP....\n")
             formatted_answer = self._invoke_loop()
         except AssertionError:
             self._printer.print(
@@ -128,6 +129,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
         """
         formatted_answer = None
         while not isinstance(formatted_answer, AgentFinish):
+            print(f"\nINVOKING LOOP NOT YET FINISHED\n")
             try:
                 if self._has_reached_max_iterations():
                     formatted_answer = self._handle_max_iterations_exceeded(
@@ -157,8 +159,10 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
             except Exception as e:
                 if e.__class__.__module__.startswith("litellm"):
                     # Do not retry on litellm errors
+                    print(f"igi-litellmERROR.no.retry?")
                     raise e
                 if self._is_context_length_exceeded(e):
+                    print(f"igi-contextlength exceeded: {e}")
                     self._handle_context_length()
                     continue
                 else:
@@ -166,6 +170,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     raise e
             finally:
                 self.iterations += 1
+                print(f"igi-invoke_loop_iteration_cnt {self.iterations}")
 
         # During the invoke loop, formatted_answer alternates between AgentAction
         # (when the agent is using tools) and eventually becomes AgentFinish
@@ -197,6 +202,9 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
     def _get_llm_response(self) -> str:
         """Call the LLM and return the response, handling any invalid responses."""
+        print(f"\n CALLING LLM with this message....\n")
+        for msg in self.messages:
+            print(f"   msg:{msg}\n")
         try:
             answer = self.llm.call(
                 self.messages,
@@ -211,10 +219,10 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
         if not answer:
             self._printer.print(
-                content="Received None or empty response from LLM call.",
+                content="Received None or empty response from LLM call -igi-getllmresponse-not answer.",
                 color="red",
             )
-            raise ValueError("Invalid response from LLM call - None or empty.")
+            raise ValueError("Invalid response from LLM call - None or empty.-igi-getllmresponse-not answer.")
 
         return answer
 
@@ -630,10 +638,10 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
         if answer is None or answer == "":
             self._printer.print(
-                content="Received None or empty response from LLM call.",
+                content="igi-max-iters-exceeded-Received None or empty response from LLM call.",
                 color="red",
             )
-            raise ValueError("Invalid response from LLM call - None or empty.")
+            raise ValueError("Invalid response from LLM call - None or empty. igi-max-iters-exceeded")
 
         formatted_answer = self._format_answer(answer)
         # Return the formatted answer, regardless of its type
