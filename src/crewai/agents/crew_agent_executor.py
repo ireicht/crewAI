@@ -221,7 +221,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
         if not answer:
             self._printer.print(
-                content=f"Received None or empty response from LLM call -igi-getllmresponse-not answer. answer:{answer}",
+                content=f"Received None or empty response from LLM call -igi-getllmresponse-not answer TODO implement a retry!!!. answer:{answer}",
                 color="red",
             )
             raise ValueError("Invalid response from LLM call - None or empty.-igi-getllmresponse-not answer.")
