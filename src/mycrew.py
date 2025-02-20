@@ -58,10 +58,10 @@ class Mytestcrewa1():
 			print(f"agent finish: \nCLBK_REP_Finish_Thought: {output.thought}\nCLBK_REP_Finish_Output: {output.output}\nCLBK_REP_Finish_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 	try:
-		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.1)
+		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-9b-it-8bit",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-27b",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
-		myllm_r1_d_qwen = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-7b-mlx",  base_url="http://localhost:1234/v1", temperature=0.7)
+		myllm_r1_d_qwen = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-14b",  base_url="http://localhost:1234/v1", temperature=0.0)
 		
 		# llm = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.7)
 		# llm=LLM(model="ollama/llama3.2:latest", base_url="http://localhost:11434")
@@ -78,7 +78,7 @@ class Mytestcrewa1():
 			verbose=True,
 			step_callback=self.my_researcher_stepCallback,
 			tools=[myDuckDuckGoSearchTool()],
-			llm=self.myllm_llama3_8b
+			llm=self.myllm_r1_d_qwen
 		)
 
 	@agent

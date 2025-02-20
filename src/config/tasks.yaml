@@ -2,16 +2,17 @@ research_task:
   description: >
     Conduct a thorough research about {topic}
     Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    the current year is {current_year}. Reason about good sources from the internet for {topic}. generate good search queries for the sources and the {topic}. Think about useful search queries for the topic {topic} and format the search queries in the requested Action format for the tool. Suggest minium 5 search queries.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
+    A list with 10 bullet points of the most relevant information about {topic}. Provide sources and links to the information where you compiled your information.
   agent: researcher
 
 reporting_task:
   description: >
     Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Make sure the report is detailed and contains any and all relevant information. 
+    For each bullet point, search the internet and include include the links to the sources where you got the information from.
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
+    A fully fledged report with the main topics, each with a full section of information and its links to the source.
     Formatted as markdown without '```'
   agent: reporting_analyst
