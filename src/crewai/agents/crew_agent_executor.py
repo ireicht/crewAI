@@ -202,14 +202,16 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
     def _get_llm_response(self) -> str:
         """Call the LLM and return the response, handling any invalid responses."""
-        print(f"\n CALLING LLM with this message....\n")
-        for msg in self.messages:
-            print(f"   msg:{msg}\n")
+        print(f"\n---> CALLING LLM with this message(s)\n")
+        for msg_cnt, msg in enumerate(self.messages):
+            print(f"   msg({msg_cnt}):{msg}\n")
+        print("  ------ END Messages ----")
         try:
             answer = self.llm.call(
                 self.messages,
                 callbacks=self.callbacks,
             )
+            print(f"\n<--- LLM RESPONSE:\n{answer} \n---END RESPONSE ---")
         except Exception as e:
             self._printer.print(
                 content=f"Error during LLM call: {e}",
@@ -219,7 +221,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
         if not answer:
             self._printer.print(
-                content="Received None or empty response from LLM call -igi-getllmresponse-not answer.",
+                content=f"Received None or empty response from LLM call -igi-getllmresponse-not answer. answer:{answer}",
                 color="red",
             )
             raise ValueError("Invalid response from LLM call - None or empty.-igi-getllmresponse-not answer.")
