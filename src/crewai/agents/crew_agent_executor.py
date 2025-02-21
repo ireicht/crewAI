@@ -23,7 +23,7 @@ from crewai.utilities.exceptions.context_window_exceeding_exception import (
 )
 from crewai.utilities.logger import Logger
 from crewai.utilities.training_handler import CrewTrainingHandler
-
+from igi_helper import print_structured
 
 @dataclass
 class ToolResult:
@@ -204,7 +204,11 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
         """Call the LLM and return the response, handling any invalid responses."""
         print(f"\n---> CALLING LLM with this message(s)\n")
         for msg_cnt, msg in enumerate(self.messages):
-            print(f"   msg({msg_cnt}):{msg}\n")
+            # print(f"\nmsg_orig:({msg_cnt}):{msg}")
+            print(f"\nmsg_struct:({msg_cnt}):")
+            print_structured(msg)
+            print(f"...end..of..msg({msg_cnt})...\n")
+            
         print("  ------ END Messages ----")
         try:
             answer = self.llm.call(
