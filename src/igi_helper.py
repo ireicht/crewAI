@@ -1,4 +1,5 @@
-
+import unicodedata
+import re
 
 def print_structured(json_input):
     def print_dict(d, indent=2):
@@ -19,3 +20,19 @@ def print_structured(json_input):
                 print(' ' * indent + f"{key}: {formatted_value}")
     
     print_dict(json_input)
+
+def sanitize_filename(value):#
+    """
+    Sanitize the filename to remove invalid characters, including special characters
+    such as umlauts, accents, etc.
+    """
+    # Normalize unicode characters to their closest ASCII representation
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    
+    # Replace specific characters (e.g., umlauts, sharp s)
+    value = value.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue').replace('ß', 'ss')
+
+    # Replace any other non-alphanumeric characters with '_'
+    value = re.sub(r'[^a-zA-Z0-9_\-]', '_', value)
+    
+    return value
