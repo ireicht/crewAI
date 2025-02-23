@@ -268,6 +268,7 @@ class LLM:
             for message in messages:
                 if message.get("role") == "system":
                     message["role"] = "assistant"
+                    print(f"llm.py: rewriting role: system to role: assistant")
 
         with suppress_warnings():
             if callbacks and len(callbacks) > 0:
