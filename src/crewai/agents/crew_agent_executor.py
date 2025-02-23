@@ -100,6 +100,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
         try:
             print(f"\nINVOKING LOOP....\n")
+            
             formatted_answer = self._invoke_loop()
         except AssertionError:
             self._printer.print(
@@ -159,7 +160,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
             except Exception as e:
                 if e.__class__.__module__.startswith("litellm"):
                     # Do not retry on litellm errors
-                    print(f"igi-litellmERROR.no.retry?")
+                    print(f"igi-litellmERROR.no.retry? TODO implement retry, maybe next time works")
                     raise e
                 if self._is_context_length_exceeded(e):
                     print(f"igi-contextlength exceeded: {e}")
@@ -202,7 +203,8 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
 
     def _get_llm_response(self) -> str:
         """Call the LLM and return the response, handling any invalid responses."""
-        print(f"\n---> CALLING LLM with this message(s)\n")
+        print(f"\n---> CALLING LLM {self.llm.model} with this message(s)\n")
+        
         for msg_cnt, msg in enumerate(self.messages):
             # print(f"\nmsg_orig:({msg_cnt}):{msg}")
             print(f"\nmsg_struct:({msg_cnt}):")
