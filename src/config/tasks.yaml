@@ -1,13 +1,29 @@
-research_task:
+formulate_prompt_task:
+  name: prompting
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}. Reason about good sources from the internet for {topic}. generate good search queries for the sources and the {topic}. Think about useful search queries for the topic {topic} and format the search queries in the requested Action format for the tool. Suggest minium 5 search queries.
+    rewrite and structure the assigned topic "{topic}" into a prompt optimized for LLM inferencing. 
+    Reason about each task and subtask to formulate it into a well defined and clear LLM input.
+    Reason about the Context
+    Provide any relevant background information or context that the LLM needs to understand the task.
+    This can include definitions, domain-specific terms, or any necessary context for proper inference.
+    If necessary, break the topic {topic} down into subtasks. Reason if the task can be broken down into smaller subtasks, list them in order, making each subtask clear and actionable. Use Tag to mark the task for better understanding for the LLM
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}. Provide sources and links to the information where you compiled your information.
+    Clear and structured LLM prompt including most relevant terms and aspects to gain the best information as well as critical discourse for the provided topic {topic}. Evaluate how many prompts are necessary to cover all aspects of the topic. Do not provide more than {max_number_of_prompts} prompts. Indicate when a new prompt start by using the identifyier term NEW_LLM_PROMPT_<followed by the prompt number index>. so the next agent can go throgh the prompts prompt by prompt. Make sure you write the complete answer after the indictor "Final Answer:"
+  agent: prompt_engineer
+
+research_task:
+  name: researching
+  description: >
+    Below, you will find the context from the previous step. There might be multiple contexts each separated by the identifyier term "NEW_LLM_PROMPT_". Treat each context block separately.
+    For each context block conduct a thorough research. for each aspect of the context search the internet for latest information and news. generate smart phrases which can be used as search terms to compile relevant information and latest news. format the search tasks in the requested "Action" format for the tool as defined in your system prompt. Suggest minium 5 search queries.
+    Make sure you find any interesting and relevant information given
+    the current year is {current_year}. 
+  expected_output: >
+    Fully fledged collecton of information, news, reports covering all necessary and relevant aspects of {topic}.
   agent: researcher
 
 reporting_task:
+  name: reporting
   description: >
     Review the context you got and expand each topic into a full section for a report.
     Make sure the report is detailed and contains any and all relevant information. 
