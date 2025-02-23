@@ -9,6 +9,7 @@ from mycrew import Mytestcrewa1
 ### disable crewai telemetry!
 import os
 os.environ['OTEL_SDK_DISABLED'] = 'true'
+os.environ['LITELLM_LOG'] = 'DEBUG'
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -23,6 +24,7 @@ def run():
     """
     inputs = {
         'topic': 'AI LLMs',
+        'max_number_of_prompts': '10',
         'current_year': str(datetime.now().year)
     }
     
