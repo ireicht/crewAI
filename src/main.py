@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime
 
 from mycrew import Mytestcrewa1
+from mysearchcrew import MySearchCrew
 
 ### disable crewai telemetry!
 import os
@@ -30,7 +31,8 @@ def run():
     }
     
     try:
-        Mytestcrewa1().crew().kickoff(inputs=inputs)
+        # Mytestcrewa1().crew().kickoff(inputs=inputs)
+        MySearchCrew().crew().kickoff(inputs=inputs)
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
 

@@ -1,0 +1,31 @@
+search_terms_task:
+  name: search_terms
+  description: >
+    this is your input list. enumerate it and return it as your final result:
+    "History of LLMs from 2010 until 2025"
+    "Best AI LLMs for OCR in 2025"
+    "Latest Model Release from Mistral 2025"
+    "What is the difference between BERT and MODERNBERT in AI?"
+    "Latest jailbreak of LLM 2025"
+    "AI LLMs powered virtual assistants market trends forecast 2025"
+    
+  expected_output: >
+    list of {min_number_of_search_queries} search terms. Make sure you write the complete answer after the indictor "Final Answer:"
+  agent: topic_engineer
+
+web_search_task:
+  name: web_searching
+  description: >
+    Below, you will find the context from the previous step. Search the internet for the provided list of search terms.
+  expected_output: >
+    unmodified list of the search terms and its results form the web. make sure to keep all information.
+  agent: search_executor
+
+reporting_task:
+  name: reporting
+  description: >
+    Review the context you got and identify the search queries as well as their search results. Identify  which information is new to you and which information you already knew.
+  expected_output: >
+    A report stating the search querie and its search results. Then a statement of self-reflection what information of the search result is new to you and which information you already know. Provide details what you have learned and what you already knew. Be honest!
+    Formatted as markdown without '```'
+  agent: information_evaluator

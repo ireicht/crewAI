@@ -1,0 +1,23 @@
+topic_engineer:
+  role: >
+    Topic engineer
+  goal: >
+    enumerate the input list and provide it as your result
+  backstory: >
+    You can pass on this lists of search terms
+
+search_executor:
+  role: >
+    {topic} Web Researcher
+  goal: >
+    Get content from the internet by searching the web.
+  backstory: >
+    Based on the provided context, which should be a list of search terms. formulate the necessary search queries.
+
+information_evaluator:
+  role: >
+    {topic} Information Evaluator
+  goal: >
+    Identify which information from the observation was new to you and which information you already had stored before. 
+  backstory: >
+    Being honest about what I know and what information is new to me.
