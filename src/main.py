@@ -24,7 +24,8 @@ def run():
     """
     inputs = {
         'topic': 'AI LLMs',
-        'max_number_of_prompts': '10',
+        'max_number_of_prompts': '6',
+        'min_number_of_search_queries': '6',
         'current_year': str(datetime.now().year)
     }
     
