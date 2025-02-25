@@ -8,14 +8,29 @@ from datetime import datetime
 import os.path
 from igi_helper import sanitize_filename
 
+from pydantic import Field, BaseModel as PydanticBaseModel
+from typing import Type
+
 # If you want to run a snippet of code before or after the crew starts, 
 # you can use the @before_kickoff and @after_kickoff decorators
 # https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
 
+
+'''
+These definitions are needed to describe the tools parameters 
+Tool Name: DuckDuckGo Search
+Tool Arguments: {{'query': {{'description': 'The term you want to search for.', 'type': 'str'}}}}
+Tool Description: Useful for finding up-to-date information from the web.
+'''
+class DuckDuckGoSearchSchema(PydanticBaseModel):
+    query: str = Field(description="The term you want to search for.")
+
 class myDuckDuckGoSearchTool(BaseTool):
+
 	name: str = "DuckDuckGo Search"
 	description: str = "Useful for finding up-to-date information from the web."
-	
+	# Define args_schema as a class-level attribute with Pydantic's Field
+	args_schema: Type[PydanticBaseModel] = Field(default=DuckDuckGoSearchSchema)
 
 	def _run(self, query: str) -> str:
 		# Ensure the DuckDuckGoSearchRun is invoked properly.
@@ -29,6 +44,7 @@ class myDuckDuckGoSearchTool(BaseTool):
 	def _get_tool(self):
 		# Create an instance of the tool when needed
 		return myDuckDuckGoSearchTool()
+
 
 
 @CrewBase

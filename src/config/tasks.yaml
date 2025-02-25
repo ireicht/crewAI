@@ -15,7 +15,7 @@ research_task:
   name: researching
   description: >
     Below, you will find the context from the previous step. There might be multiple contexts each separated by the identifyier term "NEW_LLM_PROMPT_". Treat each context block separately.
-    For each context block conduct a thorough research. for each aspect of the context search the internet for latest information and news. generate smart phrases which can be used as search terms to compile relevant information and latest news. format the search tasks in the requested "Action" format for the tool as defined in your system prompt. Suggest minium 5 search queries.
+    For each context block conduct a thorough research. for each aspect of the context search the internet for latest information and news. generate smart phrases which can be used as search terms to compile relevant information and latest news. format the search tasks in the requested "Action" format for the tool as defined in your system prompt. Suggest minium {min_number_of_search_queries} search queries.
     Make sure you find any interesting and relevant information given
     the current year is {current_year}. 
   expected_output: >
