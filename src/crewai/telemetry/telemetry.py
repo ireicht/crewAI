@@ -47,7 +47,7 @@ class Telemetry:
     def __init__(self):
         self.ready = False
         self.trace_set = False
-
+        return
         if os.getenv("OTEL_SDK_DISABLED", "false").lower() == "true":
             return
 
