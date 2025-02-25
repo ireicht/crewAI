@@ -67,8 +67,8 @@ class Mytestcrewa1():
 			print(f"agent finish: \nCLBK_REP_Finish_Thought: {output.thought}\nCLBK_REP_Finish_Output: {output.output}\nCLBK_REP_Finish_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 	try:
-		# myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
-		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
+		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
+		# myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-9b-it-8bit",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
 		myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-27b",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
 		myllm_r1_d_qwen = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.4, max_tokens=12000)
@@ -128,12 +128,12 @@ class Mytestcrewa1():
 	@task
 	def formulate_prompt_task(self) -> Task:
 		myTask=Task(
-		config=self.tasks_config['formulate_prompt_task'],
+			config=self.tasks_config['formulate_prompt_task'],
 		)
 		myTask.output_file=os.path.join('output',f"{self.generateFileName(myTask)}.md")
 		return myTask
 
-	# @task
+	@task
 	def research_task(self) -> Task:
 		myTask=Task(
 			config=self.tasks_config['research_task'],
@@ -141,12 +141,13 @@ class Mytestcrewa1():
 		myTask.output_file=os.path.join('output',f"{self.generateFileName(myTask)}.md")
 		return myTask
 
-	# @task
+	@task
 	def reporting_task(self) -> Task:
 		myTask = Task(
 			config=self.tasks_config['reporting_task'],
 		)
 		myTask.output_file=os.path.join('output',f"{self.generateFileName(myTask)}.md")
+		return myTask
 
 	@crew
 	def crew(self) -> Crew:
