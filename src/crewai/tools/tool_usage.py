@@ -101,7 +101,10 @@ class ToolUsage:
     def use(
         self, calling: Union[ToolCalling, InstructorToolCalling], tool_string: str
     ) -> str:
+        print(f"IGI-TOOL USE calling: {calling}")
+        print(f"IGI-TOOL USE toolStr: {tool_string}")
         if isinstance(calling, ToolUsageErrorException):
+            print(f"IGI-TOOL USE: ToolUsageErrorException")
             error = calling.message
             if self.agent.verbose:
                 self._printer.print(content=f"\n\n{error}\n", color="red")
@@ -110,14 +113,17 @@ class ToolUsage:
 
         try:
             tool = self._select_tool(calling.tool_name)
+            print(f"IGI-TOOL FOUND tool: {tool}")
         except Exception as e:
             error = getattr(e, "message", str(e))
+            print(f"IGI-TOOL FOUND Error: {e}")
             self.task.increment_tools_errors()
             if self.agent.verbose:
                 self._printer.print(content=f"\n\n{error}\n", color="red")
             return error
 
         if isinstance(tool, CrewStructuredTool) and tool.name == self._i18n.tools("add_image")["name"]:  # type: ignore
+            print(f"IGI-TOOL Structured Tool: {tool.name}")
             try:
                 result = self._use(tool_string=tool_string, tool=tool, calling=calling)
                 return result
@@ -180,20 +186,26 @@ class ToolUsage:
                     self.task.increment_delegations(coworker)
 
                 if calling.arguments:
+                    print(f"IGI-TOOL USE CALLING ARGUMENTS: {calling.arguments} ")
                     try:
                         acceptable_args = tool.args_schema.model_json_schema()["properties"].keys()  # type: ignore
+                        print(f"IGI-TOOL USE CALLING acceptable_args: {acceptable_args} ")
                         arguments = {
                             k: v
                             for k, v in calling.arguments.items()
                             if k in acceptable_args
                         }
+                        print(f"IGI-TOOL USE CALLING arguments before invoke: {arguments} ")
                         result = tool.invoke(input=arguments)
+                        print(f"IGI-TOOL USE CALLING arguments after invoke: {result} ")
                     except Exception:
+                        print(f"IGI-TOOL USE CALLINGinvoke invoke exception, trying again in a weird way:")
                         arguments = calling.arguments
                         result = tool.invoke(input=arguments)
                 else:
                     result = tool.invoke(input={})
             except Exception as e:
+                print(f"IGI-TOOL USE EXCEPTION: {e} ")
                 self.on_tool_error(tool=tool, tool_calling=calling, e=e)
                 self._run_attempts += 1
                 if self._run_attempts > self._max_parsing_attempts:
@@ -373,8 +385,9 @@ class ToolUsage:
         tool_name = self.action.tool
         tool = self._select_tool(tool_name)
         try:
+            print(f"IGI-TOOL-CALLING: {self.action.tool_input}")
             arguments = self._validate_tool_input(self.action.tool_input)
-
+            print(f"IGI-TOOL_CALLING arguments: {arguments}")
         except Exception:
             if raise_error:
                 raise
@@ -410,6 +423,7 @@ class ToolUsage:
                     return self._original_tool_calling(tool_string)
         except Exception as e:
             self._run_attempts += 1
+            print(f"IGI_TOOL EXCEPTION: run attempts: {self._run_attempts}")
             if self._run_attempts > self._max_parsing_attempts:
                 self._telemetry.tool_usage_error(llm=self.function_calling_llm)
                 self.task.increment_tools_errors()
@@ -456,6 +470,7 @@ class ToolUsage:
         # Attempt 4: Repair JSON
         try:
             repaired_input = repair_json(tool_input)
+            print(f"igi-original_input_toRepair: {tool_input}")
             self._printer.print(
                 content=f"Repaired JSON: {repaired_input}", color="blue"
             )

@@ -237,7 +237,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                 color="red",
             )
             raise ValueError("Invalid response from LLM call - None or empty.-igi-getllmresponse-not answer.")
-
+            # answer = " "
         return answer
 
     def _process_llm_response(self, answer: str) -> Union[AgentAction, AgentFinish]:
@@ -395,9 +395,11 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                 action=agent_action,
             )
             tool_calling = tool_usage.parse_tool_calling(agent_action.text)
-
+            print(f"IGI_EXC_TOOL: {tool_calling}")
             if isinstance(tool_calling, ToolUsageErrorException):
+
                 tool_result = tool_calling.message
+                print(f"IGI tool usage Exception, returning tool_result: {tool_result}")
                 return ToolResult(result=tool_result, result_as_answer=False)
             else:
                 if tool_calling.tool_name.casefold().strip() in [
