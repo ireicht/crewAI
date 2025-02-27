@@ -308,11 +308,15 @@ class LLM:
 
                 # --- 2) Make the completion call
                 response = litellm.completion(**params)
+                print(f"llm.py RAW RESPONSE:\n{response}\n")
                 response_message = cast(Choices, cast(ModelResponse, response).choices)[
                     0
                 ].message
                 text_response = response_message.content or ""
+                print(f"llm.py TEXT RESPONSE:\n{text_response}\n")
                 tool_calls = getattr(response_message, "tool_calls", [])
+                print(f"llm.py tool_calls:\n{tool_calls}\n")
+
 
                 # --- 3) Handle callbacks with usage info
                 if callbacks and len(callbacks) > 0:

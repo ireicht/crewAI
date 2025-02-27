@@ -370,7 +370,7 @@ class Task(BaseModel):
                 context=context,
                 tools=tools,
             )
-
+            print(f"\n======== IGI TASK OUTPUT RESULT:\n{result}\n")
             pydantic_output, json_output = self._export_output(result)
             task_output = TaskOutput(
                 name=self.name,

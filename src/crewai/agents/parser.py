@@ -82,13 +82,17 @@ class CrewAgentParser:
                 raise OutputParserException(
                     f"{FINAL_ANSWER_AND_PARSABLE_ACTION_ERROR_MESSAGE}"
                 )
+            print(f"IGI_ACTION_MATCH: {action_match}")
             action = action_match.group(1)
             clean_action = self._clean_action(action)
-
+            print(f"IGI_CLEAN_ACTION: {clean_action}")
             action_input = action_match.group(2).strip()
+            print(f"IGI_ACTION_INPUT: {action_input}")
 
             tool_input = action_input.strip(" ").strip('"')
+            print(f"tool_input: {tool_input}")
             safe_tool_input = self._safe_repair_json(tool_input)
+            print(f"safe_tool_input: {safe_tool_input}")
 
             return AgentAction(thought, clean_action, safe_tool_input, text)
 

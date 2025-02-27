@@ -188,7 +188,9 @@ class CrewStructuredTool:
                 raise ValueError(f"Failed to parse arguments as JSON: {e}")
 
         try:
+            print(f"IGI-Structured Tool args validation raw_args: {raw_args}")
             validated_args = self.args_schema.model_validate(raw_args)
+            print(f"IGI-Structured Tool args validation validated: {validated_args}")
             return validated_args.model_dump()
         except Exception as e:
             raise ValueError(f"Arguments validation failed: {e}")
@@ -223,6 +225,7 @@ class CrewStructuredTool:
 
     def _run(self, *args, **kwargs) -> Any:
         """Legacy method for compatibility."""
+        print(f"IGI_RUNINSTRUCTURED_TOOL")
         # Convert args/kwargs to our expected format
         input_dict = dict(zip(self.args_schema.model_fields.keys(), args))
         input_dict.update(kwargs)
@@ -233,6 +236,7 @@ class CrewStructuredTool:
     ) -> Any:
         """Main method for tool execution."""
         parsed_args = self._parse_args(input)
+        print(f"IGI-MAIN STRUCTURED TOOL CALL invoke, parsed args: {parsed_args}")
         return self.func(**parsed_args, **kwargs)
 
     @property
