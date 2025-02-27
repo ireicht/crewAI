@@ -9,7 +9,7 @@ import os.path
 from igi_helper import sanitize_filename
 
 from pydantic import Field, BaseModel as PydanticBaseModel
-from typing import Type
+from typing import Type, Union
 
 # If you want to run a snippet of code before or after the crew starts, 
 # you can use the @before_kickoff and @after_kickoff decorators
@@ -23,23 +23,43 @@ Tool Arguments: {{'query': {{'description': 'The term you want to search for.', 
 Tool Description: Useful for finding up-to-date information from the web.
 '''
 class DuckDuckGoSearchSchema(PydanticBaseModel):
-    query: str = Field(description="The term you want to search for.")
+    query: Union[str, dict] = Field(description="The term you want to search for.")
 
 class myDuckDuckGoSearchTool(BaseTool):
-
+	# def my_caching_func(args, result):
+	# 	print(f"CACHING: {result}")
+	# 	return result	 
+	
+	cnt: int = 0 #Test counter
 	name: str = "DuckDuckGo Search"
 	description: str = "Useful for finding up-to-date information from the web."
 	# Define args_schema as a class-level attribute with Pydantic's Field
 	args_schema: Type[PydanticBaseModel] = Field(default=DuckDuckGoSearchSchema)
+	# cache_function: my_caching_func
 
-	def _run(self, query: str) -> str:
-		# Ensure the DuckDuckGoSearchRun is invoked properly.
-		duckduckgo_tool = DuckDuckGoSearchRun()
-		# check if query has nested queries
+	def _run(self, query: Union[str, dict]) -> str:
+		self.cnt += 1
 		print(f"\nDDGO-query:{query}\n")
-		response = duckduckgo_tool.invoke(query)
-		print(f"DDG_Response: {response}")
-		return response
+		# Ensure the DuckDuckGoSearchRun is invoked properly.
+		duckduckgo_tool = DuckDuckGoSearchResults()
+		# check if query has nested queries
+		if isinstance(query, str):
+			duckduckgo_tool = DuckDuckGoSearchResults()
+			response = duckduckgo_tool.invoke(query)
+			return response
+		elif isinstance(query, dict):
+			try:
+				normalized_query = {k.lower(): v for k, v in query.items()}
+				search_string = normalized_query.get("description", None)  # Now you're sure the key is "description"
+			except:
+				pass
+			if not search_string:
+				search_string = " ".join([f"{k}:{v}" for k, v in query.items()])
+
+			
+			response = duckduckgo_tool.invoke(search_string)
+			print(f"DDG_Response: {response}")
+			return response
 
 	def _get_tool(self):
 		# Create an instance of the tool when needed
@@ -73,6 +93,7 @@ class MySearchCrew():
 		#if agent finish or agent action or Toolresult
 
 	def my_reporter_stepCallback(self, output: Task):
+		self.agents
 		print(f"\n Reporter STEP PERFORMED: \nstepCallback:{output} \n")
 		if isinstance(output, ToolResult):
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
@@ -87,12 +108,15 @@ class MySearchCrew():
 		# myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
 		myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-9b-it",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=0)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-27b",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
-		myllm_r1_d_qwen = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.4, max_tokens=12000)
-		myllm_r1_d_llama = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-llama-8b",  base_url="http://localhost:1234/v1", temperature=0.4, max_tokens=12000)
+		myllm_r1_d_qwen = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000)
+		myllm_r1_d_llama = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-llama-8b",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000)
 		# myllm_mixtral = LLM(api_key="fsdf", model="openai/mixtral-8x7b-instruct-v0.1",  base_url="http://localhost:1234/v1", temperature=0.1, max_tokens=18000)
-		myllm_mixtral = LLM(api_key="fsdf", model="openai/mistral-small-24b-instruct-2501",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=18000)
-		myllm_commandr = LLM(api_key="fsdf", model="openai/c4ai-command-r-v01@q8_0",  base_url="http://localhost:1234/v1", temperature=0.1, max_tokens=18000)
-		
+		myllm_mixtral = LLM(api_key="fsdf", model="openai/mistral-small-24b-instruct-2501",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000)
+		myllm_commandr = LLM(api_key="fsdf", model="openai/c4ai-command-r-v01@q8_0",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000)
+		myllm_minicpm = LLM(api_key="fsdf", model="openai/minicpm-o-2_6",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000)
+		myllm_watt_8b = LLM(api_key="fsdf", model="openai/watt-tool-8b",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000)
+		myllm_gorilla = LLM(api_key="fsdf", model="openai/gorilla-openfunctions-v2",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000)
+
 		# llm = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.7)
 		# llm=LLM(model="ollama/llama3.2:latest", base_url="http://localhost:11434")
 		
@@ -110,7 +134,7 @@ class MySearchCrew():
 			verbose=True,
 			# step_callback=self.my_researcher_stepCallback,
 			# tools=[myDuckDuckGoSearchTool()],
-			llm=self.myllm_gemma2
+			llm=self.myllm_llama3_8b
 			# llm=self.myllm_llama3_8b
 		)
 
@@ -120,7 +144,7 @@ class MySearchCrew():
 		return Agent(
 			config=self.agents_config['search_executor'],
 			verbose=True,
-			# step_callback=self.my_researcher_stepCallback,
+			step_callback=self.my_researcher_stepCallback,
 			tools=[myDuckDuckGoSearchTool()],
 			# llm=self.myllm_r1_d_llama
 			llm=self.myllm_gemma2
@@ -133,7 +157,7 @@ class MySearchCrew():
 			verbose=True,
 			# step_callback=self.my_reporter_stepCallback,
 			# tools=[myDuckDuckGoSearchTool()],
-			llm=self.myllm_gemma2
+			llm=self.myllm_mixtral
 		)
 
 
