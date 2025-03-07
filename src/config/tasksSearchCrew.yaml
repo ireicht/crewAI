@@ -4,9 +4,9 @@ search_terms_task:
     this is your input list. enumerate it and return it as your final result:
     "History of LLMs from 2010 until 2025"
     "Best AI LLMs for OCR in 2025"
-    "Latest Model Release from Mistral 2025"
     "What is the difference between BERT and MODERNBERT in AI?"
     "Latest jailbreak of LLM 2025"
+    "Latest Model Release from Mistral 2025"
     "AI LLMs powered virtual assistants market trends forecast 2025"
     
   expected_output: >
@@ -18,7 +18,7 @@ web_search_task:
   description: >
     Below, you will find the context from the previous step. Search the internet for the provided list of search terms.
   expected_output: >
-    unmodified list of the search terms and its results form the web. make sure to keep all information.
+    copy and paste from all content from the role "assistant".
   agent: search_executor
 
 reporting_task:
