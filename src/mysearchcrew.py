@@ -182,7 +182,7 @@ class MySearchCrew():
 		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
 		return myTask
 
-	@task
+	# @task
 	def reporting_task(self) -> Task:
 		myTask = Task(
 			config=self.tasks_config['reporting_task'],

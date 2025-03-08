@@ -30,6 +30,7 @@ from crewai.utilities.exceptions.context_window_exceeding_exception import (
 from crewai.utilities.logger import Logger
 from crewai.utilities.training_handler import CrewTrainingHandler
 from igi_helper import print_structured
+import time
 
 @dataclass
 class ToolResult:
@@ -173,6 +174,11 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     self._handle_context_length()
                     continue
                 else:
+                    print(f"igi-UNKNOWN ERROR, although it was simply a empty response? Error MSG: {e} ,__str__: {e.__str__}")
+                    if str(e).startswith(f"Invalid response from LLM call"):
+                        print(f"\n\n===> IDENTIFIED EMPTY RESPONSE: continue waiting a second: \n\n")
+                        time.sleep(5)
+                        continue
                     self._handle_unknown_error(e)
                     raise e
             finally:
