@@ -75,7 +75,7 @@ class ToolUsage:
         self._telemetry: Telemetry = Telemetry()
         self._run_attempts: int = 1
         self._max_parsing_attempts: int = 3
-        self._remember_format_after_usages: int = 3
+        self._remember_format_after_usages: int = 10
         self.agent = agent
         self.tools_description = tools_description
         self.tools_names = tools_names
@@ -276,6 +276,9 @@ class ToolUsage:
         return result
 
     def _should_remember_format(self) -> bool:
+        print(f"TOOL_USEAGE_REMEMBER_FORMAT: task-used-tools: {self.task.used_tools}, remem_after_usagesages: {self._remember_format_after_usages} Modulo: {self.task.used_tools % self._remember_format_after_usages}")
+        rem_result=self.task.used_tools % self._remember_format_after_usages == 0
+        print(f"TOOL_USEAGE_REMEMBER_FORMAT_MODULO RESULT:{rem_result}")
         return self.task.used_tools % self._remember_format_after_usages == 0
 
     def _remember_format(self, result: str) -> None:
