@@ -18,7 +18,7 @@ web_search_task:
   description: >
     Below, you will find the context from the previous step. Search the internet for the provided list of search terms.
   expected_output: >
-    copy and paste from all content from the role "assistant".
+    Your final answer is a list of the original search query, followed by copy paste of its related search result. Make sure you write the complete answer after the indictor "Final Answer:"
   agent: search_executor
 
 reporting_task:

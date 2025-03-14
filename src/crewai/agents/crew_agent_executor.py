@@ -177,7 +177,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     print(f"igi-UNKNOWN ERROR, although it was simply a empty response? Error MSG: {e} ,__str__: {e.__str__}")
                     if str(e).startswith(f"Invalid response from LLM call"):
                         print(f"\n\n===> IDENTIFIED EMPTY RESPONSE: continue waiting a second: \n\n")
-                        time.sleep(5)
+                        time.sleep(50)
                         continue
                     self._handle_unknown_error(e)
                     raise e
