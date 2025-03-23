@@ -92,7 +92,7 @@ class ToolUsage:
             and self.function_calling_llm in OPENAI_BIGGER_MODELS
         ):
             self._max_parsing_attempts = 2
-            self._remember_format_after_usages = 4
+            self._remember_format_after_usages = 10
 
     def parse_tool_calling(self, tool_string: str):
         """Parse the tool string and return the tool calling."""

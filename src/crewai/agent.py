@@ -314,6 +314,7 @@ class Agent(BaseAgent):
         ).task_execution()
 
         stop_words = [self.i18n.slice("observation")]
+        # stop_words = []
 
         if self.response_template:
             stop_words.append(

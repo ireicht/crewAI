@@ -572,8 +572,10 @@ class LLM:
             str: The response text
         """
         # --- 1) Make the completion call
+        # print(f"--> LLM COMPLETION CALL With DATA:\n{params}\n-------------")
+        print(f"--> LLM COMPLETION CALL With DATA supressed-------------")
         response = litellm.completion(**params)
-
+        print(f"<-- LLM COMPLETION RAW Response:\n{response}\n----------")
         # --- 2) Extract response message and content
         response_message = cast(Choices, cast(ModelResponse, response).choices)[
             0
@@ -716,7 +718,7 @@ class LLM:
             messages = [{"role": "user", "content": messages}]
 
         # --- 4) Handle O1 model special case (system messages not supported)
-        if "o1" in self.model.lower():
+        if "o1" in self.model.lower() or "mixtral-8x" in self.model.lower():
             for message in messages:
                 if message.get("role") == "system":
                     message["role"] = "assistant"
