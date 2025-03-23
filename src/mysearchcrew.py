@@ -149,7 +149,7 @@ class MySearchCrew():
 			step_callback=self.my_researcher_stepCallback,
 			tools=[myDuckDuckGoSearchTool()],
 			# llm=self.myllm_r1_d_llama
-			llm=self.myllm_llama3_8b_duckduckGoSearch,
+			llm=self.myllm_llama3_8b_duckduckGoSearch
 			
 		)
 

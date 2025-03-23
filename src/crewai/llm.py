@@ -37,7 +37,7 @@ with warnings.catch_warnings():
         get_supported_openai_params,
     )
     from litellm.types.utils import ModelResponse
-    from litellm.utils import supports_response_schema
+    from litellm.utils import get_supported_openai_params, supports_response_schema
 
 
 from crewai.utilities.events import crewai_event_bus
