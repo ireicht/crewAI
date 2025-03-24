@@ -4,10 +4,10 @@ from igi_helper import write_log, get_variable_value
 from collections import Counter
 import re
 
-do_only_call_summarize = True
+do_only_call_summarize = False
 
 # Define the number of iterations
-iterations = 5
+iterations = 100
 logfile_name = "benchmark.log"
 # self._remember_format_after_usages: int = 20
 tool_format_remember_iteration = get_variable_value('crewai/tools/tool_usage.py','self._remember_format_after_usages: int')
