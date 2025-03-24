@@ -29,7 +29,7 @@ from crewai.utilities.exceptions.context_window_exceeding_exception import (
 )
 from crewai.utilities.logger import Logger
 from crewai.utilities.training_handler import CrewTrainingHandler
-from igi_helper import print_structured
+from igi_helper import print_structured, write_log
 import time
 
 @dataclass
@@ -169,6 +169,8 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     # Do not retry on litellm errors
                     if f"{e}".startswith("litellm.Timeout:"):
                         print(f"igi-litellmERROR. Timeout reached: {e}")
+                        write_log(f"benchmark.log",f"bnchmrk_timeout_reached: {self.crew.id} MESSAGES:{len(self.messages)} MESSAGE_STACK:{self.messages}")
+                        exit(0)
                         print(f"===> USER INPUT, check current status, maybe you want to increase the timeout? currently set to {self.llm.timeout} seconds.")
 
                         user_input = input("Please enter a new timeout: ")
@@ -198,7 +200,10 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     print(f"igi-UNKNOWN ERROR, although it was simply a empty response? Error MSG: {e} ,__str__: {e.__str__}")
                     if str(e).startswith(f"Invalid response from LLM call"):
                         print(f"\n\n===> IDENTIFIED EMPTY RESPONSE: you can also think about some human input needed? ... anyhow continue waiting 10 seconds:\n\n")
-                        print(f"Doing...write out message stack to disk .... think about modifiying the exported message stack and load it next time when calling the llm")
+                        print(f"think about modifiying the exported message stack and load it next time when calling the llm")
+                        
+                        write_log(f"benchmark.log",f"bnchmrk_llm_empty_response: {self.crew.id} MESSAGES:{len(self.messages)} MESSAGE_STACK:{self.messages}")
+                        exit(0)
                         try:
                             user_prompt = self.messages[1]
                             user_prompt_content = user_prompt["content"]
@@ -213,10 +218,10 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                         auto_feedback = {'role': 'user', 'content': f' \nYou are doing a really good job so far. It seems you are stuck, can you tell my why?'}
                         # responding_text = f"When responding, I must use the following format: ``` \nThought: you should always think about what to do\nAction: the action to take, should be one of [DuckDuckGo Search] \nAction Input: the input to the action, dictionary enclosed in curly braces Observation: the result of the action ``` This Thought/Action/Action Input/Result can repeat N times. Once I know the final answer, I must return the following format:```Thought: I now can give a great answer \nFinal Answer: Your final answer must be the great and the most complete as possible, it must be outcome described```"
                         responding_text = input("\n+++++======> USER INPUT NEEDED:\nLLM seems to be confused. Fix it with some good User Prompt:")
-                        
-                        auto_feedback = {'role': 'user', 'content': f'\n{responding_text}'}
-                        
-                        self.messages.append(auto_feedback)
+                        if responding_text != "":
+                            auto_feedback = {'role': 'user', 'content': f'\n{responding_text}'}
+                            self.messages.append(auto_feedback)
+
                         # time.sleep(10)
                         continue
                     self._handle_unknown_error(e)

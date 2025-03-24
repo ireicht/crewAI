@@ -75,7 +75,7 @@ class ToolUsage:
         self._telemetry: Telemetry = Telemetry()
         self._run_attempts: int = 1
         self._max_parsing_attempts: int = 3
-        self._remember_format_after_usages: int = 10
+        self._remember_format_after_usages: int = 20
         self.agent = agent
         self.tools_description = tools_description
         self.tools_names = tools_names
@@ -92,7 +92,7 @@ class ToolUsage:
             and self.function_calling_llm in OPENAI_BIGGER_MODELS
         ):
             self._max_parsing_attempts = 2
-            self._remember_format_after_usages = 10
+            self._remember_format_after_usages = 20
 
     def parse_tool_calling(self, tool_string: str):
         """Parse the tool string and return the tool calling."""

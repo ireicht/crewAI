@@ -1,4 +1,5 @@
 import unicodedata
+import datetime
 import re
 
 def print_structured(json_input):
@@ -20,6 +21,23 @@ def print_structured(json_input):
                 print(' ' * indent + f"{key}: {formatted_value}")
     
     print_dict(json_input)
+
+
+def write_log(filename, message):
+    """
+    Writes a message with a timestamp to a specified log file.
+
+    Parameters:
+        filename (str): The name of the log file.
+        message (str): The content of the message to be written.
+    """
+    try:
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        with open(filename, 'a') as log_file:
+            log_file.write(f'[{timestamp}] {message}\n')
+        print("Message successfully written to", filename)
+    except Exception as e:
+        print("An error occurred while writing to the log file:", str(e))
 
 def sanitize_filename(value):#
     """
