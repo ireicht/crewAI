@@ -1,0 +1,5 @@
+======BENCHMARK CONFIG======
+LLM-Timeout (sec):60
+DuckDuckGo Search requests: 6
+Answer-Format reminder after iteration: 20
+=======

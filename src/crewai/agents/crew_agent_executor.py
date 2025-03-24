@@ -169,7 +169,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     # Do not retry on litellm errors
                     if f"{e}".startswith("litellm.Timeout:"):
                         print(f"igi-litellmERROR. Timeout reached: {e}")
-                        write_log(f"benchmark.log",f"bnchmrk_timeout_reached: {self.crew.id} MESSAGES:{len(self.messages)} MESSAGE_STACK:{self.messages}")
+                        write_log(f"benchmark.log",f"bnchmrk_timeout_reached: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
                         exit(0)
                         print(f"===> USER INPUT, check current status, maybe you want to increase the timeout? currently set to {self.llm.timeout} seconds.")
 
@@ -202,7 +202,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                         print(f"\n\n===> IDENTIFIED EMPTY RESPONSE: you can also think about some human input needed? ... anyhow continue waiting 10 seconds:\n\n")
                         print(f"think about modifiying the exported message stack and load it next time when calling the llm")
                         
-                        write_log(f"benchmark.log",f"bnchmrk_llm_empty_response: {self.crew.id} MESSAGES:{len(self.messages)} MESSAGE_STACK:{self.messages}")
+                        write_log(f"benchmark.log",f"bnchmrk_llm_empty_response: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
                         exit(0)
                         try:
                             user_prompt = self.messages[1]

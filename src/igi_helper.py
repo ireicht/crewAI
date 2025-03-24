@@ -1,6 +1,7 @@
 import unicodedata
 import datetime
 import re
+import ast
 
 def print_structured(json_input):
     def print_dict(d, indent=2):
@@ -54,3 +55,21 @@ def sanitize_filename(value):#
     value = re.sub(r'[^a-zA-Z0-9_\-]', '_', value)
     
     return value
+
+
+def get_variable_value(filepath: str, var_of_interest: str) -> str:
+    # Define a regex pattern to match the variable assignment
+    pattern = re.compile(rf'{re.escape(var_of_interest)}\s*=\s*(\d+)')
+    
+    try:
+        with open(filepath, 'r') as file:
+            for line in file:
+                match = pattern.search(line)
+                if match:
+                    return match.group(1)  # Return the value found
+    except FileNotFoundError:
+        print(f"File not found: {filepath}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return None  # Return None if the variable is not found

@@ -35,7 +35,7 @@ def run():
         # Mytestcrewa1().crew().kickoff(inputs=inputs)
         write_log(f"benchmark.log", f"starting_crew:")
         MySearchCrew().crew().kickoff(inputs=inputs)
-        write_log(f"benchmark.log",f"bnchmrk_successfully_finished")
+        write_log(f"benchmark.log",f"bnchmrk_successfully_finished:")
 
     except Exception as e:
         write_log(f"benchmark.log",f"bnchmrk_other_exception_occured: {e}")
