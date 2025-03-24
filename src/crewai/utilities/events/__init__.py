@@ -39,7 +39,6 @@ from .tool_usage_events import (
     ToolUsageEvent,
     ToolValidateInputErrorEvent,
 )
-<<<<<<< HEAD
 from .llm_events import (
     LLMCallCompletedEvent,
     LLMCallFailedEvent,
@@ -47,9 +46,6 @@ from .llm_events import (
     LLMCallType,
     LLMStreamChunkEvent,
 )
-=======
-from .llm_events import LLMCallCompletedEvent, LLMCallFailedEvent, LLMCallStartedEvent
->>>>>>> refs/remotes/origin/feature/addingDuckDuckGoSearch
 
 # events
 from .event_listener import EventListener
