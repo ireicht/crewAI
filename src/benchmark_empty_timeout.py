@@ -1,6 +1,6 @@
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value
+from igi_helper import write_log, get_variable_value, format_duration
 from collections import Counter
 import re
 
@@ -12,7 +12,7 @@ logfile_name = "benchmark.log"
 # self._remember_format_after_usages: int = 20
 tool_format_remember_iteration = get_variable_value('crewai/tools/tool_usage.py','self._remember_format_after_usages: int')
 
-
+bench_start = datetime.datetime.now()
 # Loop to call main.py 'iterations' times
 for i in range(iterations):
     if do_only_call_summarize:
@@ -30,10 +30,8 @@ for i in range(iterations):
         end_time = datetime.datetime.now()
         # Calculate duration of each iteration
         duration = end_time - start_time
-        # Format the duration in HH:MM:SS format
-        hours, remainder = divmod(int(duration.total_seconds()), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+
+        formatted_duration = format_duration(duration)
 
         write_log(f"{logfile_name}",f"Iteration {it_log_cnt} terminated. Duration {formatted_duration}")
     except subprocess.CalledProcessError as e:
@@ -42,13 +40,16 @@ for i in range(iterations):
         # Calculate duration of each iteration
         duration = end_time - start_time
         # Format the duration in HH:MM:SS format
-        hours, remainder = divmod(int(duration.total_seconds()), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+     
+        formatted_duration = format_duration(duration)
         write_log(f"{logfile_name}",f"Iteration {it_log_cnt} duration {formatted_duration} failed with error code {e.returncode}")
     
-
-
+bench_end = datetime.datetime.now()
+duration = bench_end - bench_start
+formatted_duration = format_duration(duration)
+print(f"TOTAL Duration: {formatted_duration}")
+write_log(f"{logfile_name}",f"+++ TOTAL Duration (HH:MM:SS): {formatted_duration} ++++")
+          
 def summarize_logfile(logfile_path):
 
     # Regular expression to match lines containing 'bnchmrk'

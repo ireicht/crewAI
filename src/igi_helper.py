@@ -73,3 +73,10 @@ def get_variable_value(filepath: str, var_of_interest: str) -> str:
         print(f"An error occurred: {e}")
 
     return None  # Return None if the variable is not found
+
+def format_duration(duration):
+    # Format the duration in HH:MM:SS format
+    hours, remainder = divmod(int(duration.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
+    return formatted_duration
