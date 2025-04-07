@@ -16,9 +16,9 @@ search_terms_task:
 web_search_task:
   name: web_searching
   description: >
-    Below, you will find the context from the previous step. Search the internet for the provided list of search terms. Go through the list item by item and start searching for the first missig item in the list. Once all items in the list are done, give your final answer after the indicator "Final Answer:"
+    Below, you will find the context from the previous step. Search the internet for the provided list of search terms. Go through the list item by item and start searching for the first missig item in the list. Once all items in the list are processed, give "DONE" as your final answer after the indicator "Final Answer:"
   expected_output: >
-    Your final answer is a list of the original search query, followed by copy paste of its related search result. Make sure you write the complete answer after the indictor "Final Answer:"
+    Your final answer is simpy the term "DONE". Make sure you write the answer "DONE" after the indictor "Final Answer:"
   agent: search_executor
 
 reporting_task:

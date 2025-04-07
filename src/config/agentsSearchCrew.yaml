@@ -10,7 +10,7 @@ search_executor:
   role: >
     {topic} Web Researcher
   goal: >
-    Get content from the internet by searching the web.
+    Get content from the internet by searching the web. Ignore and do not memorize any of the Observations and search results. The observations are already stored outside your context.
   backstory: >
     Based on the provided context, which should be a list of search terms. formulate the necessary search queries.
 

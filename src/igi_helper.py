@@ -1,7 +1,69 @@
 import unicodedata
 import datetime
 import re
-import ast
+from pathlib import Path
+import json
+
+
+
+
+# Function to read JSON configuration file
+def load_config(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except:
+        print(f"File does not yet exist: {file_path}, trying to create it..")
+        save_config(file_path,{"init_file":f"{file_path}"})
+        print(f"file created: {file_path}")
+        return load_config(file_path)
+
+
+# Function to write dictionary to JSON configuration file
+def save_config(file_path, config_dict):
+    with open(file_path, 'w') as file:
+        json.dump(config_dict, file, indent=4)
+
+
+# Getter and Setter for BENCHMARK_SESSION_ID_MOD
+def get_benchmark_session_id_mod():
+    config = load_config('benchmark_tmp.json')
+    return config.get('BENCHMARK_SESSION_ID_MOD', '')
+
+def set_benchmark_session_id_mod(value):
+    config = load_config('benchmark_tmp.json')
+    config['BENCHMARK_SESSION_ID_MOD'] = value
+    save_config('benchmark_tmp.json', config)
+
+# Getter and Setter for BENCHMARK_BASE_PATH
+def get_benchmark_base_path():
+    config = load_config('benchmark_tmp.json')
+    return config.get('BENCHMARK_BASE_PATH', '')
+
+def set_benchmark_base_path(value):
+    config = load_config('benchmark_tmp.json')
+    config['BENCHMARK_BASE_PATH'] = value
+    save_config('benchmark_tmp.json', config)
+
+# Getter and Setter for BENCHMARK_LOG_FILE_PATH
+def get_benchmark_log_file_path():
+    config = load_config('benchmark_tmp.json')
+    return config.get('BENCHMARK_LOG_FILE_PATH', '')
+
+def set_benchmark_log_file_path(value):
+    config = load_config('benchmark_tmp.json')
+    config['BENCHMARK_LOG_FILE_PATH'] = value
+    save_config('benchmark_tmp.json', config)
+
+# Getter and Setter for BENCHMARK_SESSION_ID_MOD
+def get_benchmark_crew_iteration():
+    config = load_config('benchmark_tmp.json')
+    return config.get('crew_iteration', '')
+
+def set_benchmark_crew_iteration(value):
+    config = load_config('benchmark_tmp.json')
+    config['crew_iteration'] = value
+    save_config('benchmark_tmp.json', config)
 
 def print_structured(json_input):
     def print_dict(d, indent=2):
@@ -73,6 +135,45 @@ def get_variable_value(filepath: str, var_of_interest: str) -> str:
         print(f"An error occurred: {e}")
 
     return None  # Return None if the variable is not found
+
+
+def update_file_variable(file_path, var_prefix, new_value):
+    """
+    Updates a variable in a file by modifying the line that starts with the specified prefix.
+    If the line is not found, it appends the variable definition at the end of the file.
+
+    Args:
+        file_path (str or Path): The path to the file.
+        var_prefix (str): The prefix of the variable line to update.
+        new_value (str): The new value to assign to the variable.
+    """
+    # Convert file_path to a Path object (if it isn't already)
+    file_path = Path(file_path)
+
+    # Check if the file exists
+    if not file_path.exists():
+        raise FileNotFoundError(f"The file '{file_path}' does not exist.")
+
+    # Read the file content
+    lines = file_path.read_text().splitlines(keepends=True)
+
+    updated = False
+    new_lines = []
+    
+    # Process each line and update the target variable line
+    for line in lines:
+        if line.startswith(var_prefix):
+            new_lines.append(f"{var_prefix}{new_value}\n")
+            updated = True
+        else:
+            new_lines.append(line)
+    
+    # Append the variable if it wasn't found
+    if not updated:
+        new_lines.append(f"{var_prefix}{new_value}\n")
+    
+    # Write the updated content back to the file
+    file_path.write_text("".join(new_lines))
 
 def format_duration(duration):
     # Format the duration in HH:MM:SS format

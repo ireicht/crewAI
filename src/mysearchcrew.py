@@ -6,7 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResul
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
-from igi_helper import sanitize_filename
+from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration
 
 from pydantic import Field, BaseModel as PydanticBaseModel
 from typing import Type, Union
@@ -59,6 +59,7 @@ class myDuckDuckGoSearchTool(BaseTool):
 			
 			response = duckduckgo_tool.invoke(search_string)
 			print(f"DDG_Response: {response}")
+			# return response
 			return response
 
 	def _get_tool(self):
@@ -87,6 +88,15 @@ class MySearchCrew():
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
 		elif isinstance(output, AgentAction):
 			print(f"action output: \nCLBK_RES_Thought: {output.thought} \nCLBK_RES_Tool: {output.tool}\nCLBK_RES_Tool_input: {output.tool_input}\nCLBK_RES_Text: {output.text}\nCLBK_RES_result: {output.result}")
+			
+			benchmark_SESSION_ID = get_benchmark_session_id_mod()
+			if benchmark_SESSION_ID != "":
+				benchmark_iteration_cnt = get_benchmark_crew_iteration()
+				#some benchmark is going on
+				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_action_call_{benchmark_iteration_cnt}.log"
+				agent_action_log_file_path = os.path.join(get_benchmark_base_path(),agent_action_log_file)
+				
+				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
 
 		elif isinstance(output, AgentFinish):
 			print(f"agent finish: \nCLBK_RES_Thought: {output.thought}\nCLBK_RES_Output: {output.output}\nCLBK_RES_Text: {output.text}")
@@ -105,7 +115,7 @@ class MySearchCrew():
 		#if agent finish or agent action or Toolresult
 	try:
 		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, seed=42, frequency_penalty=2.0)
-		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=90, seed=42)
+		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=60, seed=42, top_k=1)
 		# myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
 		myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-9b-it",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=0, seed=42, frequency_penalty=2.0)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-27b",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)
