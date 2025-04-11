@@ -55,6 +55,11 @@ def set_benchmark_log_file_path(value):
     config['BENCHMARK_LOG_FILE_PATH'] = value
     save_config('benchmark_tmp.json', config)
 
+def reset_benchmark_tmp_file():
+    config = load_config('benchmark_tmp.json')
+    config = {}
+    save_config('benchmark_tmp.json', config)
+
 # Getter and Setter for BENCHMARK_SESSION_ID_MOD
 def get_benchmark_crew_iteration():
     config = load_config('benchmark_tmp.json')
@@ -63,6 +68,13 @@ def get_benchmark_crew_iteration():
 def set_benchmark_crew_iteration(value):
     config = load_config('benchmark_tmp.json')
     config['crew_iteration'] = value
+    save_config('benchmark_tmp.json', config)
+
+def append_finished_crew_iteration(value):
+    config = load_config('benchmark_tmp.json')
+    current_finished_crew_iterations = config.get('finished_crew_iteration',[])
+    current_finished_crew_iterations.append(value)
+    config['finished_crew_iteration'] = current_finished_crew_iterations
     save_config('benchmark_tmp.json', config)
 
 def print_structured(json_input):

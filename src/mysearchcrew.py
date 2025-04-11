@@ -93,7 +93,7 @@ class MySearchCrew():
 			if benchmark_SESSION_ID != "":
 				benchmark_iteration_cnt = get_benchmark_crew_iteration()
 				#some benchmark is going on
-				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_action_call_{benchmark_iteration_cnt}.log"
+				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_action_call_it_{benchmark_iteration_cnt}.log"
 				agent_action_log_file_path = os.path.join(get_benchmark_base_path(),agent_action_log_file)
 				
 				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
@@ -115,7 +115,7 @@ class MySearchCrew():
 		#if agent finish or agent action or Toolresult
 	try:
 		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, seed=42, frequency_penalty=2.0)
-		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=60, seed=42, top_k=1)
+		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=45, seed=42, top_k=1)
 		# myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=12000)
 		myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-9b-it",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=0, seed=42, frequency_penalty=2.0)
 		# myllm_gemma2 = LLM(api_key="fsdf", model="openai/gemma-2-27b",  base_url="http://localhost:1234/v1", temperature=0.7, max_tokens=0)

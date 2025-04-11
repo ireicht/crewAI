@@ -1,6 +1,6 @@
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file
 from collections import Counter
 import re
 import os
@@ -14,7 +14,7 @@ do_only_call_summarize = False
 iterations = 3
 
 
-
+reset_benchmark_tmp_file()
 timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 set_benchmark_session_id_mod(f"{timestamp}")
 
@@ -59,12 +59,14 @@ for i in range(iterations):
         duration = end_time - start_time
         formatted_duration = format_duration(duration)
 
+        # when using exit(#)
         if result.returncode == 0:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated. Duration {formatted_duration}")
+            append_finished_crew_iteration(it_log_cnt)
         elif result.returncode == 1:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated due to timeout. Duration {formatted_duration}")
         elif result.returncode == 2:
-            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated due to timeout. Duration {formatted_duration}")
+            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated due to empty response. Duration {formatted_duration}")
     except subprocess.CalledProcessError as e:
         # End time for each iteration
         end_time = datetime.datetime.now()
@@ -73,7 +75,15 @@ for i in range(iterations):
         # Format the duration in HH:MM:SS format
      
         formatted_duration = format_duration(duration)
-        write_log(f"{logfile_path}",f"Iteration {it_log_cnt} duration {formatted_duration} failed with error code {e.returncode}")
+        # when using sys.exit(#)
+        if e.returncode == 0:
+            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys). Duration {formatted_duration}")
+        elif e.returncode == 1:
+            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to timeout. Duration {formatted_duration}")
+        elif e.returncode == 2:
+            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to empty response. Duration {formatted_duration}")
+        else:
+            write_log(f"{logfile_path}",f"Iteration {it_log_cnt} duration {formatted_duration} failed with unknown (sys) error code {e.returncode}")
     
 bench_end = datetime.datetime.now()
 duration = bench_end - bench_start
@@ -165,14 +175,6 @@ def tool_usage_details(benchmark_results_dir, timestamp):
     for tool_logfile in tool_files:
         tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
         tool_counts, input_counts, total_tool_count, total_input_count = summarize_tool_usage(tool_logfile_path)
-
-
-
-
-
-#filename pattern for toolusage logfile benchmark_{BENCHMARK_SESSION_ID}_action_call.log
-# tool_logfile_path = os.path.join(benchmark_results_dir,f"benchmark_{timestamp}_action_call.log")
-# tool_logfile_path = "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/benchmark_05-04-2025_18-25-13_action_call.log"
 
 
 

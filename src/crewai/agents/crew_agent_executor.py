@@ -170,8 +170,8 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     if f"{e}".startswith("litellm.Timeout:"):
                         print(f"igi-litellmERROR. Timeout reached: {e}")
                         write_log(get_benchmark_log_file_path(),f"bnchmrk_timeout_reached: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
-                        sys.exit(1) # debugger stops here, therefore use exit(1)
-                        # exit(1)
+                        # sys.exit(1) 
+                        exit(1)
                         print(f"===> USER INPUT, check current status, maybe you want to increase the timeout? currently set to {self.llm.timeout} seconds.")
 
                         user_input = input("Please enter a new timeout: ")
@@ -204,8 +204,8 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                         print(f"think about modifiying the exported message stack and load it next time when calling the llm")
                         
                         write_log(get_benchmark_log_file_path(),f"bnchmrk_llm_empty_response: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
-                        sys.exit(2) #debugger stops here, therefore use exit(2) -> forward it to igi_helper. let that take care of the rest
-                        # exit(2)
+                        # sys.exit(2) 
+                        exit(2)
                         try:
                             user_prompt = self.messages[1]
                             user_prompt_content = user_prompt["content"]
