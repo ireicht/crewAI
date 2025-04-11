@@ -1,6 +1,6 @@
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations
 from collections import Counter
 import re
 import os
@@ -128,12 +128,21 @@ def summarize_logfile(logfile_path):
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
 
-def list_files(directory, timestamp):
+def list_finished_crew_files(directory, timestamp):
     files = []
-    for file in os.listdir(directory):
-        if file.startswith("benchmark_" + timestamp) and "_action_call_" in file:
-            files.append(file)
-    return files   
+    finished_iterations = get_finished_crew_iterations()
+    # Construct regex pattern to match filenames like:
+    # "benchmark_01010101_action_call_it_<number>.log"
+    pattern = re.compile(r"^benchmark_" + re.escape(timestamp) + r"_action_call_it_(\d+)\.log$")
+
+    for filename in os.listdir(directory):
+        # Use regex matching to check the filename and extract the number.
+        match = pattern.match(filename)
+        if match:
+            iteration = int(match.group(1))
+            if iteration in finished_iterations:
+                files.append(filename)
+    return files
 
 
 def summarize_tool_usage(file_path):
@@ -171,8 +180,10 @@ def summarize_tool_usage(file_path):
 
 
 def tool_usage_details(benchmark_results_dir, timestamp):
-    tool_files = list_files(benchmark_results_dir, timestamp)
-    for tool_logfile in tool_files:
+    tool_files_finished = list_finished_crew_files(benchmark_results_dir, timestamp)
+    print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
+
+    for tool_logfile in tool_files_finished:
         tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
         tool_counts, input_counts, total_tool_count, total_input_count = summarize_tool_usage(tool_logfile_path)
 

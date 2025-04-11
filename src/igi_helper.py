@@ -77,6 +77,11 @@ def append_finished_crew_iteration(value):
     config['finished_crew_iteration'] = current_finished_crew_iterations
     save_config('benchmark_tmp.json', config)
 
+def get_finished_crew_iterations() -> list :
+    config = load_config('benchmark_tmp.json')
+    return config.get('finished_crew_iteration',[])
+     
+
 def print_structured(json_input):
     def print_dict(d, indent=2):
         for key, value in d.items():
