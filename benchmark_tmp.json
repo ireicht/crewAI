@@ -1,0 +1,9 @@
+{
+    "BENCHMARK_SESSION_ID_MOD": "''",
+    "BENCHMARK_BASE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results",
+    "BENCHMARK_LOG_FILE_PATH": "''",
+    "crew_iteration": "3",
+    "finished_crew_iteration": [
+        2
+    ]
+}

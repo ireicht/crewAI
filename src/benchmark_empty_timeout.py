@@ -14,10 +14,12 @@ do_only_call_summarize = True
 # Define the number of iterations
 iterations = 3
 
+timestamp = "13-04-2025_00-53-35" #set for debugging purpose, overwritten when do_only_call_summarize=False
+if not do_only_call_summarize:
+    reset_benchmark_tmp_file()
+    timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
-reset_benchmark_tmp_file()
-timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-timestamp = "13-04-2025_00-53-35"
+
 set_benchmark_session_id_mod(f"{timestamp}")
 
 
@@ -204,6 +206,7 @@ def parse_log_file(file_path):
     # - 'AGENT_USED_TOOL:' followed by any characters (non-greedy) until
     # - 'AGENT_USED_TOOL_INPUT:' then capture the JSON block.
     pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(\{.*?\})"
+    # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(.*)"
     matches = re.findall(pattern, content, re.DOTALL)
     
     entries = []
@@ -367,34 +370,47 @@ def merge_results(results_list):
                 )
     return merged
 
+def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULTS"):
+    finished_total = len(tool_results)
+    if finished_total <= 0:
+        print(f"\nNo results to evaluate. Num_ool_results: {finished_total}")
+        return
+    
+    finished_wrong = 0
+    for result in tool_results:
+        for key, value in result.items():
+            if value != {}:
+                finished_wrong += 1
+                break
+    
+    print(f"===== {description_str} ========")
+    print(f"Number of considered attempts: ({finished_total})\n ")
+    finished_correct = finished_total-finished_wrong
+    print(f"PASSED: {finished_correct} ({((finished_correct / finished_total)*100):.0f}%) ")
+    print(f"FAILED: {finished_wrong} ({((finished_wrong / finished_total)*100):.0f}%) ")
+
+    write_log(f"{logfile_path}",f"--- {description_str} ---")
+    write_log(f"{logfile_path}",f"Number of considered attempts: ({finished_total}) ")
+    write_log(f"{logfile_path}",f"PASSED: {finished_correct} ({((finished_correct / finished_total)*100):.0f}%) ")
+    write_log(f"{logfile_path}",f"FAILED: {finished_wrong} ({((finished_wrong / finished_total)*100):.0f}%) ")
+
+    merged_tool_results = merge_results(tool_results)
+
+    print("\n=============\nResult details:")
+
+    for key, errors in merged_tool_results.items():
+        print(f"\n{key}:")
+        if errors:
+            for query, count in errors.items():
+                print(f"  - '{query}': {count}")
+        else:
+            print("  None")
+
+
+# process all answers
 tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=False)
-finished_total = len(tool_results)
-finished_wrong = 0
+make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
 
-for result in tool_results:
-    for key, value in result.items():
-        if value != {}:
-            finished_wrong += 1
-            break
-
-print(f"from the successfully finished ({finished_total}) attempts,\n ")
-finished_correct = finished_total-finished_wrong
-print(f"PASSED: {finished_correct} ({((finished_correct / finished_total)*100):.0f}%) ")
-print(f"FAILED: {finished_wrong} ({((finished_wrong / finished_total)*100):.0f}%) ")
-
-write_log(f"{logfile_path}",f"--- Analysis of successfully_finished ---")
-write_log(f"{logfile_path}",f"from the successfully finished ({finished_total}) attempts:")
-write_log(f"{logfile_path}",f"PASSED: {finished_correct} {((finished_correct / finished_total)*100):.0f}% ")
-write_log(f"{logfile_path}",f"FAILED: {finished_wrong} {((finished_wrong / finished_total)*100):.0f}% ")
-
-merged_tool_results = merge_results(tool_results)
-
-print("\n=============\nBenchmark Cross-check of stable results:")
-
-for key, errors in merged_tool_results.items():
-    print(f"\n{key}:")
-    if errors:
-        for query, count in errors.items():
-            print(f"  - '{query}': {count}")
-    else:
-        print("  None")
+#process only answers from LLM stable behaviour 
+tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True)
+make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
