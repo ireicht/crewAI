@@ -4,11 +4,12 @@ from igi_helper import write_log, get_variable_value, format_duration, set_bench
 from collections import Counter
 import re
 import os
+import json
 
 ### START THIS SCRIPT in PARENT DIR of src/...
 
 
-do_only_call_summarize = False
+do_only_call_summarize = True
 
 # Define the number of iterations
 iterations = 3
@@ -16,6 +17,7 @@ iterations = 3
 
 reset_benchmark_tmp_file()
 timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+timestamp = "13-04-2025_00-53-35"
 set_benchmark_session_id_mod(f"{timestamp}")
 
 
@@ -128,9 +130,11 @@ def summarize_logfile(logfile_path):
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
 
-def list_finished_crew_files(directory, timestamp):
+def list_finished_crew_files(directory, timestamp, process_finished_calls_only=True):
     files = []
-    finished_iterations = get_finished_crew_iterations()
+    # Retrieve finished_iterations only if needed.
+    finished_iterations = get_finished_crew_iterations() if process_finished_calls_only else None
+
     # Construct regex pattern to match filenames like:
     # "benchmark_01010101_action_call_it_<number>.log"
     pattern = re.compile(r"^benchmark_" + re.escape(timestamp) + r"_action_call_it_(\d+)\.log$")
@@ -140,7 +144,10 @@ def list_finished_crew_files(directory, timestamp):
         match = pattern.match(filename)
         if match:
             iteration = int(match.group(1))
-            if iteration in finished_iterations:
+            if process_finished_calls_only:
+                if iteration in finished_iterations:
+                    files.append(filename)
+            else:
                 files.append(filename)
     return files
 
@@ -179,15 +186,215 @@ def summarize_tool_usage(file_path):
     return tool_counts, input_counts, total_tool_count, total_input_count
 
 
-def tool_usage_details(benchmark_results_dir, timestamp):
-    tool_files_finished = list_finished_crew_files(benchmark_results_dir, timestamp)
-    print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
 
+
+def parse_log_file(file_path):
+    """
+    Parses a log file and returns a list of tuples (query, tool_used).
+
+    The log file is expected to have blocks like:
+        [TIMESTAMP]
+        AGENT_USED_TOOL:<tool>
+        AGENT_USED_TOOL_INPUT:{"query": "<query_text>"}
+    """
+    with open(file_path, 'r') as f:
+        content = f.read()
+    
+    # Regex explanation:
+    # - 'AGENT_USED_TOOL:' followed by any characters (non-greedy) until
+    # - 'AGENT_USED_TOOL_INPUT:' then capture the JSON block.
+    pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(\{.*?\})"
+    matches = re.findall(pattern, content, re.DOTALL)
+    
+    entries = []
+    for tool, json_str in matches:
+        tool = tool.strip()
+        try:
+            data = json.loads(json_str)
+            query = data.get("query", "").strip()
+            # Always record the query, even if it's an empty string.
+            entries.append((query, tool))
+        except json.JSONDecodeError as e:
+            print(f"Warning: Could not decode JSON string: {json_str}. Error: {e}")
+    return entries
+
+def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
+                         benchmark_file="benchmark_ts_action_call_it3.log"):
+    """
+    Cross-checks the expected benchmark log against the actual benchmark output.
+
+    It checks:
+      - That each expected query is present in the benchmark output.
+      - In case of duplicates, counts extra occurrences.
+      - In case of missing queries, counts how many are missing.
+      - That each query uses the correct AGENT_USED_TOOL as expected.
+    
+    Parameters:
+      expected_file (str): Filename for the expected output.
+      benchmark_file (str): Filename for the actual benchmark output.
+      
+    Returns:
+      dict: A dictionary with the counts of missing queries, duplicate queries, 
+            occurrences where the wrong tool was used, and any unexpected queries.
+    """
+    # Parse both files
+    expected_logs = parse_log_file(expected_file)
+    benchmark_logs = parse_log_file(benchmark_file)
+    
+    # Build dictionary for expected queries: query -> dict(tool, count)
+    expected_dict = {}
+    for query, tool in expected_logs:
+        if query not in expected_dict:
+            expected_dict[query] = {"tool": tool, "count": 0}
+        expected_dict[query]["count"] += 1
+    
+    # Build dictionary for benchmark queries: query -> list of tools used
+    benchmark_dict = {}
+    for query, tool in benchmark_logs:
+        if query not in benchmark_dict:
+            benchmark_dict[query] = []
+        benchmark_dict[query].append(tool)
+    
+    # Initialize result counters
+    missing_queries = {}
+    duplicate_queries = {}
+    wrong_tool_usage = {}
+
+    # Check expected queries against the benchmark log
+    for query, exp in expected_dict.items():
+        expected_count = exp["count"]
+        expected_tool = exp["tool"]
+        actual_tools = benchmark_dict.get(query, [])
+        actual_count = len(actual_tools)
+        
+        # Count missing occurrences if actual frequency is less than expected
+        if actual_count < expected_count:
+            missing_queries[query] = expected_count - actual_count
+        
+        # Count duplicates if actual frequency is more than expected
+        if actual_count > expected_count:
+            duplicate_queries[query] = actual_count - expected_count
+        
+        # Check for wrong tool usage and record the wrong tool names with counts
+        wrong_tools = {}
+        for tool in actual_tools:
+            if tool != expected_tool:
+                wrong_tools[tool] = wrong_tools.get(tool, 0) + 1
+        if wrong_tools:
+            wrong_tool_usage[query] = wrong_tools
+
+    # Optionally, check for extra (unexpected) queries present in the benchmark log
+    unexpected_queries = {}
+    for query, tools in benchmark_dict.items():
+        if query not in expected_dict:
+            unexpected_queries[query] = len(tools)
+    
+    # Produce the final result report as a dictionary
+    result = {
+        "missing_queries": missing_queries,
+        "duplicate_queries": duplicate_queries,
+        "wrong_tool_usage": wrong_tool_usage,
+        "unexpected_queries": unexpected_queries
+    }
+    
+    return result
+
+
+
+
+
+
+
+# tool_logfile_path = os.path.join(benchmark_results_dir, "benchmark_11-04-2025_22-07-04_action_call_it_2.log")
+# expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_11-04-2025_22-30-50_action_call_it_3.log")
+# results = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
+# print("Benchmark Cross-check Results:")
+# print(results)
+# for key, errors in results.items():
+#             print(f"\n{key}:")
+#             if errors:
+#                 for query, count in errors.items():
+#                     print(f"  - '{query}': {count}")
+#             else:
+#                 print("  None")
+
+def tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True):
+    tool_files_finished = list_finished_crew_files(benchmark_results_dir, timestamp, process_finished_calls_only=process_finished_calls_only)
+    # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
+    results = []
     for tool_logfile in tool_files_finished:
         tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
-        tool_counts, input_counts, total_tool_count, total_input_count = summarize_tool_usage(tool_logfile_path)
-
+        expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_expected_output_A.log")
+        result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
+        results.append(result)
+        # print("\nBenchmark Cross-check Results:")
+        # for key, errors in result.items():
+        #     print(f"\n{key}:")
+        #     if errors:
+        #         for query, count in errors.items():
+        #             print(f"  - '{query}': {count}")
+        #     else:
+        #         print("  None")
+        
+        # tool_counts, input_counts, total_tool_count, total_input_count = summarize_tool_usage(tool_logfile_path)
+    return results
 
 
 summarize_logfile(f"{logfile_path}")
-tool_usage_details(benchmark_results_dir, timestamp)
+
+def merge_results(results_list):
+    # Initialize the merged dictionary with empty dictionaries for each key.
+    merged = {
+        "missing_queries": {},
+        "duplicate_queries": {},
+        "wrong_tool_usage": {},
+        "unexpected_queries": {}
+    }
+    
+    for res in results_list:
+        # Merge missing_queries, duplicate_queries, and unexpected_queries
+        for key in ["missing_queries", "duplicate_queries", "unexpected_queries"]:
+            for query, count in res.get(key, {}).items():
+                merged[key][query] = merged[key].get(query, 0) + count
+        
+        # Merge wrong_tool_usage (nested dictionary)
+        for query, tool_dict in res.get("wrong_tool_usage", {}).items():
+            if query not in merged["wrong_tool_usage"]:
+                merged["wrong_tool_usage"][query] = {}
+            for tool, count in tool_dict.items():
+                merged["wrong_tool_usage"][query][tool] = (
+                    merged["wrong_tool_usage"][query].get(tool, 0) + count
+                )
+    return merged
+
+tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=False)
+finished_total = len(tool_results)
+finished_wrong = 0
+
+for result in tool_results:
+    for key, value in result.items():
+        if value != {}:
+            finished_wrong += 1
+            break
+
+print(f"from the successfully finished ({finished_total}) attempts,\n ")
+finished_correct = finished_total-finished_wrong
+print(f"PASSED: {finished_correct} ({((finished_correct / finished_total)*100):.0f}%) ")
+print(f"FAILED: {finished_wrong} ({((finished_wrong / finished_total)*100):.0f}%) ")
+
+write_log(f"{logfile_path}",f"--- Analysis of successfully_finished ---")
+write_log(f"{logfile_path}",f"from the successfully finished ({finished_total}) attempts:")
+write_log(f"{logfile_path}",f"PASSED: {finished_correct} {((finished_correct / finished_total)*100):.0f}% ")
+write_log(f"{logfile_path}",f"FAILED: {finished_wrong} {((finished_wrong / finished_total)*100):.0f}% ")
+
+merged_tool_results = merge_results(tool_results)
+
+print("\n=============\nBenchmark Cross-check of stable results:")
+
+for key, errors in merged_tool_results.items():
+    print(f"\n{key}:")
+    if errors:
+        for query, count in errors.items():
+            print(f"  - '{query}': {count}")
+    else:
+        print("  None")

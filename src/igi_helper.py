@@ -115,7 +115,7 @@ def write_log(filename, message):
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with open(filename, 'a') as log_file:
             log_file.write(f'[{timestamp}] {message}\n')
-        print("Message successfully written to", filename)
+        #print("Message successfully written to", filename)
     except Exception as e:
         print("An error occurred while writing to the log file:", str(e))
 
