@@ -528,3 +528,129 @@
 [2025-04-14 23:23:48] sum_bnchmrk_successfully_finished = 70 (68%)
 [2025-04-14 23:23:48] sum_bnchmrk_llm_empty_response = 14 (14%)
 [2025-04-14 23:23:48] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 15:56:17] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 15:56:17] ==== SUMMARY ====
+[2025-04-29 15:56:17] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 15:56:17] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 15:56:17] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 15:56:17] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 15:56:17] Number of considered attempts: (3) 
+[2025-04-29 15:56:17] PASSED: 3 (100%) 
+[2025-04-29 15:56:17] FAILED: 0 (0%) 
+[2025-04-29 15:56:17] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 15:56:17] Number of considered attempts: (1) 
+[2025-04-29 15:56:17] PASSED: 1 (100%) 
+[2025-04-29 15:56:17] FAILED: 0 (0%) 
+[2025-04-29 15:56:40] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 15:56:40] ==== SUMMARY ====
+[2025-04-29 15:56:40] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 15:56:40] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 15:56:40] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 15:56:40] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 15:56:40] Number of considered attempts: (3) 
+[2025-04-29 15:56:40] PASSED: 2 (67%) 
+[2025-04-29 15:56:40] FAILED: 1 (33%) 
+[2025-04-29 15:56:40] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 15:56:40] Number of considered attempts: (1) 
+[2025-04-29 15:56:40] PASSED: 1 (100%) 
+[2025-04-29 15:56:40] FAILED: 0 (0%) 
+[2025-04-29 15:57:17] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 15:57:17] ==== SUMMARY ====
+[2025-04-29 15:57:17] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 15:57:17] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 15:57:17] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 15:57:17] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 15:57:17] Number of considered attempts: (3) 
+[2025-04-29 15:57:17] PASSED: 3 (100%) 
+[2025-04-29 15:57:17] FAILED: 0 (0%) 
+[2025-04-29 15:57:17] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 15:57:17] Number of considered attempts: (1) 
+[2025-04-29 15:57:17] PASSED: 1 (100%) 
+[2025-04-29 15:57:17] FAILED: 0 (0%) 
+[2025-04-29 15:59:55] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 15:59:55] ==== SUMMARY ====
+[2025-04-29 15:59:55] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 15:59:55] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 15:59:55] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:17:40] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:17:40] ==== SUMMARY ====
+[2025-04-29 18:17:40] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:17:40] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:17:40] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:17:40] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 18:17:40] Number of considered attempts: (3) 
+[2025-04-29 18:17:40] PASSED: 3 (100%) 
+[2025-04-29 18:17:40] FAILED: 0 (0%) 
+[2025-04-29 18:17:40] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 18:17:40] Number of considered attempts: (1) 
+[2025-04-29 18:17:40] PASSED: 1 (100%) 
+[2025-04-29 18:17:40] FAILED: 0 (0%) 
+[2025-04-29 18:19:45] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:19:45] ==== SUMMARY ====
+[2025-04-29 18:19:45] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:19:45] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:19:45] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:21:02] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:21:02] ==== SUMMARY ====
+[2025-04-29 18:21:02] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:21:02] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:21:02] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:22:11] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:22:11] ==== SUMMARY ====
+[2025-04-29 18:22:11] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:22:11] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:22:11] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:22:51] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:22:51] ==== SUMMARY ====
+[2025-04-29 18:22:51] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:22:51] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:22:51] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:25:17] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:25:17] ==== SUMMARY ====
+[2025-04-29 18:25:17] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:25:17] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:25:17] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:26:01] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:26:01] ==== SUMMARY ====
+[2025-04-29 18:26:01] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:26:01] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:26:01] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:30:16] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:30:16] ==== SUMMARY ====
+[2025-04-29 18:30:16] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:30:16] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:30:16] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:31:54] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 18:31:54] Number of considered attempts: (3) 
+[2025-04-29 18:31:54] PASSED: 0 (0%) 
+[2025-04-29 18:31:54] FAILED: 3 (100%) 
+[2025-04-29 18:32:23] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 18:32:23] Number of considered attempts: (1) 
+[2025-04-29 18:32:23] PASSED: 0 (0%) 
+[2025-04-29 18:32:23] FAILED: 1 (100%) 
+[2025-04-29 18:33:21] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:33:21] ==== SUMMARY ====
+[2025-04-29 18:33:21] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:33:21] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:33:21] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:34:44] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 18:34:44] Number of considered attempts: (3) 
+[2025-04-29 18:34:44] PASSED: 0 (0%) 
+[2025-04-29 18:34:44] FAILED: 3 (100%) 
+[2025-04-29 18:34:53] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 18:34:53] Number of considered attempts: (1) 
+[2025-04-29 18:34:53] PASSED: 0 (0%) 
+[2025-04-29 18:34:53] FAILED: 1 (100%) 
+[2025-04-29 18:36:03] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-04-29 18:36:03] ==== SUMMARY ====
+[2025-04-29 18:36:03] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-04-29 18:36:03] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-04-29 18:36:03] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-04-29 18:36:32] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-04-29 18:36:32] Number of considered attempts: (3) 
+[2025-04-29 18:36:32] PASSED: 0 (0%) 
+[2025-04-29 18:36:32] FAILED: 3 (100%) 
+[2025-04-29 18:36:47] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-04-29 18:36:47] Number of considered attempts: (1) 
+[2025-04-29 18:36:47] PASSED: 0 (0%) 
+[2025-04-29 18:36:47] FAILED: 1 (100%) 

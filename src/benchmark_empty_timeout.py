@@ -203,23 +203,34 @@ def parse_log_file(file_path):
         content = f.read()
     
     # Regex explanation:
-    # - 'AGENT_USED_TOOL:' followed by any characters (non-greedy) until
-    # - 'AGENT_USED_TOOL_INPUT:' then capture the JSON block.
-    pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(\{.*?\})"
-    # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(.*)"
-    matches = re.findall(pattern, content, re.DOTALL)
+    tools = re.findall(r'AGENT_USED_TOOL:(.*?)\n', content)
+    inputs = re.findall(r'AGENT_USED_TOOL_INPUT:(.*)', content)
     
-    entries = []
-    for tool, json_str in matches:
-        tool = tool.strip()
-        try:
-            data = json.loads(json_str)
-            query = data.get("query", "").strip()
-            # Always record the query, even if it's an empty string.
-            entries.append((query, tool))
-        except json.JSONDecodeError as e:
-            print(f"Warning: Could not decode JSON string: {json_str}. Error: {e}")
-    return entries
+    result = []
+    for tool, input in zip(tools, inputs):
+        print(tool)
+        print(input)
+        result.append((tool.strip(),input))
+        
+    return result
+    # pattern = r"AGENT_USED_TOOL:\s*(\w+)(?:(?!\n$).)*?(?=\n$|$|$)"
+    # # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(\{.*?\})"
+    # # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(.*)"
+    # matches = re.findall(pattern, content, re.DOTALL)
+    
+    # entries = []
+    # for entry in matches:
+    #     print(entry)
+    # # for tool, json_str in matches:
+    # #     tool = tool.strip()
+    # #     try:
+    # #         data = json.loads(json_str)
+    # #         query = data.get("query", "").strip()
+    # #         # Always record the query, even if it's an empty string.
+    # #         entries.append((query, tool))
+    # #     except json.JSONDecodeError as e:
+    # #         print(f"Warning: Could not decode JSON string: {json_str}. Error: {e}")
+    # return entries
 
 def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
                          benchmark_file="benchmark_ts_action_call_it3.log"):
