@@ -208,8 +208,8 @@ def parse_log_file(file_path):
     
     result = []
     for tool, input in zip(tools, inputs):
-        print(tool)
-        print(input)
+        # print(tool)
+        # print(input)
         result.append((tool.strip(),input))
         
     return result
@@ -257,14 +257,14 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
     
     # Build dictionary for expected queries: query -> dict(tool, count)
     expected_dict = {}
-    for query, tool in expected_logs:
+    for tool, query in expected_logs:
         if query not in expected_dict:
             expected_dict[query] = {"tool": tool, "count": 0}
         expected_dict[query]["count"] += 1
     
     # Build dictionary for benchmark queries: query -> list of tools used
     benchmark_dict = {}
-    for query, tool in benchmark_logs:
+    for tool, query in benchmark_logs:
         if query not in benchmark_dict:
             benchmark_dict[query] = []
         benchmark_dict[query].append(tool)
