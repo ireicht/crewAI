@@ -208,29 +208,9 @@ def parse_log_file(file_path):
     
     result = []
     for tool, input in zip(tools, inputs):
-        # print(tool)
-        # print(input)
         result.append((tool.strip(),input))
         
     return result
-    # pattern = r"AGENT_USED_TOOL:\s*(\w+)(?:(?!\n$).)*?(?=\n$|$|$)"
-    # # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(\{.*?\})"
-    # # pattern = r"AGENT_USED_TOOL:\s*(.+?)\s*AGENT_USED_TOOL_INPUT:\s*(.*)"
-    # matches = re.findall(pattern, content, re.DOTALL)
-    
-    # entries = []
-    # for entry in matches:
-    #     print(entry)
-    # # for tool, json_str in matches:
-    # #     tool = tool.strip()
-    # #     try:
-    # #         data = json.loads(json_str)
-    # #         query = data.get("query", "").strip()
-    # #         # Always record the query, even if it's an empty string.
-    # #         entries.append((query, tool))
-    # #     except json.JSONDecodeError as e:
-    # #         print(f"Warning: Could not decode JSON string: {json_str}. Error: {e}")
-    # return entries
 
 def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
                          benchmark_file="benchmark_ts_action_call_it3.log"):
@@ -316,21 +296,6 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
 
 
 
-
-
-
-# tool_logfile_path = os.path.join(benchmark_results_dir, "benchmark_11-04-2025_22-07-04_action_call_it_2.log")
-# expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_11-04-2025_22-30-50_action_call_it_3.log")
-# results = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
-# print("Benchmark Cross-check Results:")
-# print(results)
-# for key, errors in results.items():
-#             print(f"\n{key}:")
-#             if errors:
-#                 for query, count in errors.items():
-#                     print(f"  - '{query}': {count}")
-#             else:
-#                 print("  None")
 
 def tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True):
     tool_files_finished = list_finished_crew_files(benchmark_results_dir, timestamp, process_finished_calls_only=process_finished_calls_only)
