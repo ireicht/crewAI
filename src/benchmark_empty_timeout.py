@@ -9,7 +9,7 @@ import json
 ### START THIS SCRIPT in PARENT DIR of src/...
 
 
-do_only_call_summarize = True
+do_only_call_summarize = False
 
 # Define the number of iterations
 iterations = 3
@@ -19,7 +19,7 @@ if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
-
+print(f"Timestamp Start-Session_ID: {timestamp}")
 set_benchmark_session_id_mod(f"{timestamp}")
 
 

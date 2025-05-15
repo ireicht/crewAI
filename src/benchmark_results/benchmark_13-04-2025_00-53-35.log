@@ -708,3 +708,16 @@
 [2025-05-01 23:10:20] Number of considered attempts: (1) 
 [2025-05-01 23:10:20] PASSED: 0 (0%) 
 [2025-05-01 23:10:20] FAILED: 1 (100%) 
+[2025-05-01 23:14:19] +++ TOTAL Duration (HH:MM:SS): 00:00:00 ++++
+[2025-05-01 23:14:19] ==== SUMMARY ====
+[2025-05-01 23:14:19] sum_bnchmrk_successfully_finished = 70 (68%)
+[2025-05-01 23:14:19] sum_bnchmrk_llm_empty_response = 14 (14%)
+[2025-05-01 23:14:19] sum_bnchmrk_timeout_reached = 19 (18%)
+[2025-05-01 23:14:19] --- ANALYSIS of ALL LLM answer ATTEMPTS ---
+[2025-05-01 23:14:19] Number of considered attempts: (3) 
+[2025-05-01 23:14:19] PASSED: 2 (67%) 
+[2025-05-01 23:14:19] FAILED: 1 (33%) 
+[2025-05-01 23:14:19] --- ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished) ---
+[2025-05-01 23:14:19] Number of considered attempts: (1) 
+[2025-05-01 23:14:19] PASSED: 0 (0%) 
+[2025-05-01 23:14:19] FAILED: 1 (100%) 
