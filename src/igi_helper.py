@@ -65,10 +65,23 @@ def get_benchmark_crew_iteration():
     config = load_config('benchmark_tmp.json')
     return config.get('crew_iteration', '')
 
+def set_benchmark_task_details(value):
+    config = load_config('benchmark_tmp.json')
+    current_task_details = config.get('task_details',[])
+    if not (value in current_task_details):
+        current_task_details.append(value)
+        config['task_details'] = current_task_details
+        save_config('benchmark_tmp.json', config)    
+
+def get_benchmark_task_details() -> list:
+    config = load_config('benchmark_tmp.json')
+    return config.get('task_details',[])
+
 def set_benchmark_crew_iteration(value):
     config = load_config('benchmark_tmp.json')
     config['crew_iteration'] = value
     save_config('benchmark_tmp.json', config)
+
 
 def append_finished_crew_iteration(value):
     config = load_config('benchmark_tmp.json')

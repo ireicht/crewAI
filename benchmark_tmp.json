@@ -3,7 +3,13 @@
     "BENCHMARK_BASE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results",
     "BENCHMARK_LOG_FILE_PATH": "''",
     "crew_iteration": "3",
+    "task_details": [
+        "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-3.2-8b-instruct TASK_MODEL_TEMP:0.0",
+        "TASK_NAME:web_searching TASK_MODEL_NAME:openai/meta-llama-3.1-8b-instruct TASK_MODEL_TEMP:0.0"
+    ],
     "finished_crew_iteration": [
-        2
+        1,
+        2,
+        3
     ]
 }

@@ -6,7 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResul
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
-from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration
+from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_log_file_path, set_benchmark_task_details
 
 from pydantic import Field, BaseModel as PydanticBaseModel
 from typing import Type, Union
@@ -84,6 +84,7 @@ class MySearchCrew():
 
 	def my_researcher_stepCallback(self, output):
 		print(f"\n Researcher STEP PERFORMED: \nstepCallback:{output} \n")
+		
 		if isinstance(output, ToolResult):
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
 		elif isinstance(output, AgentAction):
@@ -102,8 +103,7 @@ class MySearchCrew():
 			print(f"agent finish: \nCLBK_RES_Thought: {output.thought}\nCLBK_RES_Output: {output.output}\nCLBK_RES_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 
-	def my_reporter_stepCallback(self, output: Task):
-		self.agents
+	def my_reporter_stepCallback(self, output):
 		print(f"\n Reporter STEP PERFORMED: \nstepCallback:{output} \n")
 		if isinstance(output, ToolResult):
 			print(f"toolresult_finalAnswer ({output.result_as_answer}):{output.result}")
@@ -113,6 +113,7 @@ class MySearchCrew():
 		elif isinstance(output, AgentFinish):
 			print(f"agent finish: \nCLBK_REP_Finish_Thought: {output.thought}\nCLBK_REP_Finish_Output: {output.output}\nCLBK_REP_Finish_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
+	
 	try:
 		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, seed=42, frequency_penalty=2.0)
 		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=45, seed=42, top_k=1)
@@ -184,6 +185,7 @@ class MySearchCrew():
 			config=self.tasks_config['search_terms_task'],
 		)
 		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
+		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
 	@task
@@ -192,6 +194,7 @@ class MySearchCrew():
 			config=self.tasks_config['web_search_task'],
 		)
 		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
+		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
 	# @task
@@ -216,5 +219,6 @@ class MySearchCrew():
 			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
 		)
 
-	def generateFileName(self, myTask:Task):	
-		return sanitize_filename(f'task_{myTask.name}-model_{myTask.agent.llm.model}_temp_{myTask.agent.llm.temperature}_ts_{self.ts}')
+	def generateFileName(self, myTask:Task):
+		benchmark_SESSION_ID = get_benchmark_session_id_mod()	
+		return sanitize_filename(f'task_benchmark_{benchmark_SESSION_ID}-task_name_{myTask.name}_ts_{self.ts}')

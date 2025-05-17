@@ -14,7 +14,7 @@ do_only_call_summarize = False
 # Define the number of iterations
 iterations = 3
 
-timestamp = "13-04-2025_00-53-35" #set for debugging purpose, overwritten when do_only_call_summarize=False
+timestamp = "13-04-2025_00-53-35" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -303,7 +303,7 @@ def tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_
     results = []
     for tool_logfile in tool_files_finished:
         tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
-        expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_expected_output_A.log")
+        expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_expected_output_actionCall_TaskWEBSEARCHING.log")
         result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
         results.append(result)
         # print("\nBenchmark Cross-check Results:")
