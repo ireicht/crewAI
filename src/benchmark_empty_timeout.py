@@ -1,6 +1,6 @@
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details
 from collections import Counter
 import re
 import os
@@ -132,14 +132,14 @@ def summarize_logfile(logfile_path):
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
 
-def list_finished_crew_files(directory, timestamp, process_finished_calls_only=True):
+def list_finished_crew_files(directory, session_id, process_finished_calls_only=True, task_name=""):
     files = []
     # Retrieve finished_iterations only if needed.
     finished_iterations = get_finished_crew_iterations() if process_finished_calls_only else None
 
     # Construct regex pattern to match filenames like:
     # "benchmark_01010101_action_call_it_<number>.log"
-    pattern = re.compile(r"^benchmark_" + re.escape(timestamp) + r"_action_call_it_(\d+)\.log$")
+    pattern = re.compile(r"^benchmark_" + re.escape(session_id) + re.escape(f"_TASK_NAME_{task_name}") + r"_action_call_it_(\d+)\.log$")
 
     for filename in os.listdir(directory):
         # Use regex matching to check the filename and extract the number.
@@ -297,13 +297,13 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
 
 
 
-def tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True):
-    tool_files_finished = list_finished_crew_files(benchmark_results_dir, timestamp, process_finished_calls_only=process_finished_calls_only)
+def tool_usage_details(benchmark_results_dir, session_id, process_finished_calls_only=True, task_name=""):
+    tool_files_finished = list_finished_crew_files(benchmark_results_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
     # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
     results = []
     for tool_logfile in tool_files_finished:
         tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
-        expected_bench_file = os.path.join(benchmark_results_dir,"benchmark_expected_output_actionCall_TaskWEBSEARCHING.log")
+        expected_bench_file = os.path.join(benchmark_results_dir,f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
         result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
         results.append(result)
         # print("\nBenchmark Cross-check Results:")
@@ -383,10 +383,18 @@ def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULT
             print("  None")
 
 
-# process all answers
-tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=False)
-make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+# get task_names and check which ones to analyse
+# analyse only tasks where we find an "expected_output_<session_id>_<task_name>....log file"
+task_list_dicts = get_benchmark_task_details()
+for task_dict in task_list_dicts:
+    print(task_dict)
+    task_name = task_dict.get("TASK_NAME")
+    print(task_name)
 
-#process only answers from LLM stable behaviour 
-tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True)
-make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
+    # process all answers of task
+    tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=False, task_name=task_name)
+    make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+
+    #process only answers from LLM stable behaviour 
+    tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True, task_name=task_name)
+    make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")

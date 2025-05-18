@@ -75,7 +75,16 @@ def set_benchmark_task_details(value):
 
 def get_benchmark_task_details() -> list:
     config = load_config('benchmark_tmp.json')
-    return config.get('task_details',[])
+    task_list = config.get('task_details',[])
+    if len(task_list) <= 0:
+        return []
+    list_dict = []
+    for task_details in task_list:
+        pairs = task_details.split()
+        task_dict = {key_value.split(':', 1)[0]: key_value.split(':', 1)[1] for key_value in pairs}
+        list_dict.append(task_dict)
+    return list_dict
+    
 
 def set_benchmark_crew_iteration(value):
     config = load_config('benchmark_tmp.json')
