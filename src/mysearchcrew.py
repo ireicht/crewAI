@@ -98,9 +98,10 @@ class MySearchCrew():
 				#some benchmark is going on
 				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_TASK_NAME_web_searching_action_call_it_{benchmark_iteration_cnt}.log"
 				agent_action_log_file_path = os.path.join(get_benchmark_base_path(),agent_action_log_file)
-				
+				myTask = myAgent.agent_executor.task
+				taskName = myTask.name
 				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
-				write_log(agent_action_log_file_path,f"\nMyAGENT:{myAgent.agent_ops_agent_name} Agent-LLM:{myAgent.llm.model}")
+				write_log(agent_action_log_file_path,f"\nMyAGENT:{myAgent.agent_executor.task} Agent-LLM:{myAgent.llm.model}")
 				
 		elif isinstance(output, AgentFinish):
 			print(f"agent finish: \nCLBK_RES_Thought: {output.thought}\nCLBK_RES_Output: {output.output}\nCLBK_RES_Text: {output.text}")
