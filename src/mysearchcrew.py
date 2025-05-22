@@ -7,6 +7,7 @@ from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
 from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_log_file_path, set_benchmark_task_details
+# from functools import partial
 
 from pydantic import Field, BaseModel as PydanticBaseModel
 from typing import Type, Union
@@ -82,6 +83,7 @@ class MySearchCrew():
 	tasks_config = 'config/tasksSearchCrew.yaml'
 
 
+	# def my_researcher_stepCallback(self, output, myAgent:Agent):
 	def my_researcher_stepCallback(self, output):
 		print(f"\n Researcher STEP PERFORMED: \nstepCallback:{output} \n")
 		
@@ -98,7 +100,8 @@ class MySearchCrew():
 				agent_action_log_file_path = os.path.join(get_benchmark_base_path(),agent_action_log_file)
 				
 				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
-
+				# write_log(agent_action_log_file_path,f"\nMyAGENT:{myAgent.agent_ops_agent_name} Agent-LLM:{myAgent.llm.model}")
+				
 		elif isinstance(output, AgentFinish):
 			print(f"agent finish: \nCLBK_RES_Thought: {output.thought}\nCLBK_RES_Output: {output.output}\nCLBK_RES_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
@@ -154,15 +157,23 @@ class MySearchCrew():
 
 	@agent
 	def search_executor(self) -> Agent:
+		# myAgent = Agent(
+		# 	config=self.agents_config['search_executor'],
+		# 	verbose=True,
+		# 	tools=[myDuckDuckGoSearchTool()],
+		# 	# llm=self.myllm_r1_d_llama
+		# 	llm=self.myllm_llama3_8b_duckduckGoSearch
+		# )
+		# myAgent.step_callback = partial(self.my_researcher_stepCallback, myAgent)
+		# return myAgent
 		return Agent(
 			config=self.agents_config['search_executor'],
 			verbose=True,
 			step_callback=self.my_researcher_stepCallback,
 			tools=[myDuckDuckGoSearchTool()],
 			# llm=self.myllm_r1_d_llama
-			llm=self.myllm_llama3_8b_duckduckGoSearch
-			
-		)
+			llm=self.myllm_llama3_8b_duckduckGoSearch   
+                )
 
 	@agent
 	def information_evaluator(self) -> Agent:
