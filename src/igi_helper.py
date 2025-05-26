@@ -3,6 +3,7 @@ import datetime
 import re
 from pathlib import Path
 import json
+import os
 
 
 
@@ -44,6 +45,9 @@ def set_benchmark_base_path(value):
     config = load_config('benchmark_tmp.json')
     config['BENCHMARK_BASE_PATH'] = value
     save_config('benchmark_tmp.json', config)
+
+def get_benchmark_logs_dir_path():
+    return os.path.join(get_benchmark_base_path(),"logs")
 
 # Getter and Setter for BENCHMARK_LOG_FILE_PATH
 def get_benchmark_log_file_path():

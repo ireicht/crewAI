@@ -6,7 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResul
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
-from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_log_file_path, set_benchmark_task_details
+from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_logs_dir_path, set_benchmark_task_details
 from functools import partial
 
 from pydantic import Field, BaseModel as PydanticBaseModel
@@ -99,7 +99,7 @@ class MySearchCrew():
 				benchmark_iteration_cnt = get_benchmark_crew_iteration()
 				#some benchmark is going on
 				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_TASK_NAME_{taskName}_action_call_it_{benchmark_iteration_cnt}.log"
-				agent_action_log_file_path = os.path.join(get_benchmark_base_path(),agent_action_log_file)
+				agent_action_log_file_path = os.path.join(get_benchmark_logs_dir_path(),agent_action_log_file)
 		
 				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
 				# write_log(agent_action_log_file_path,f"\MyTaskName:{taskName} Agent-LLM:{myAgent.llm.model}")
@@ -192,7 +192,7 @@ class MySearchCrew():
 		myTask=Task(
 			config=self.tasks_config['search_terms_task'],
 		)
-		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
 		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
@@ -201,7 +201,7 @@ class MySearchCrew():
 		myTask=Task(
 			config=self.tasks_config['web_search_task'],
 		)
-		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
 		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
@@ -210,7 +210,7 @@ class MySearchCrew():
 		myTask = Task(
 			config=self.tasks_config['reporting_task'],
 		)
-		myTask.output_file=os.path.join('outputWebSearch',f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
 		return myTask
 
 	@crew

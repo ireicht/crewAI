@@ -1,6 +1,14 @@
+'''
+Author: Ignaz Reicht
+Copyright: Ignaz Reicht (2025)
+
+NOTE: If you change the location of this file, 
+make sure to adapt the variable current_file_path and its references to other paths
+'''
+
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path
 from collections import Counter
 import re
 import os
@@ -14,7 +22,7 @@ do_only_call_summarize = False
 # Define the number of iterations
 iterations = 3
 
-timestamp = "13-04-2025_00-53-35" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "26-05-2025_12-26-51" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -27,19 +35,22 @@ set_benchmark_session_id_mod(f"{timestamp}")
 current_file_path = os.path.abspath(__file__)
 
 # Extract the directory name from the file path
-current_dir = os.path.dirname(current_file_path)
+current_dir_path = os.path.dirname(current_file_path)
 
-benchmark_results_dir = os.path.join(current_dir,"benchmark_results")
+working_dir = current_dir_path
+benchmark_results_dir = os.path.join(working_dir,"benchmark_results")
 os.makedirs(benchmark_results_dir,exist_ok=True)
+set_benchmark_base_path(f"{benchmark_results_dir}")
+benchmark_logs_dir_path = get_benchmark_logs_dir_path()
+os.makedirs(benchmark_logs_dir_path, exist_ok=True)
 
 logfile_name = f"benchmark_{timestamp}.log"
-logfile_path = os.path.join(benchmark_results_dir,logfile_name)
-set_benchmark_base_path(f"{benchmark_results_dir}")
+logfile_path = os.path.join(get_benchmark_logs_dir_path(),logfile_name)
 set_benchmark_log_file_path(f"{logfile_path}")
 
 # self._remember_format_after_usages: int = 20
-
-tool_format_remember_iteration = get_variable_value('src/crewai/tools/tool_usage.py','self._remember_format_after_usages: int')
+toolUsage_file_path = os.path.join(current_dir_path,'crewai/tools/tool_usage.py')
+tool_format_remember_iteration = get_variable_value(toolUsage_file_path,'self._remember_format_after_usages: int')
 # Generate a timestamp in the desired format: DD-MM-YYYY_HH-MM-SS
 
 bench_start = datetime.datetime.now()
@@ -297,13 +308,13 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
 
 
 
-def tool_usage_details(benchmark_results_dir, session_id, process_finished_calls_only=True, task_name=""):
-    tool_files_finished = list_finished_crew_files(benchmark_results_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
+def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_only=True, task_name=""):
+    tool_files_finished = list_finished_crew_files(benchmark_logs_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
     # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
     results = []
     for tool_logfile in tool_files_finished:
-        tool_logfile_path = os.path.join(benchmark_results_dir, tool_logfile)
-        expected_bench_file = os.path.join(benchmark_results_dir,f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
+        tool_logfile_path = os.path.join(benchmark_logs_dir, tool_logfile)
+        expected_bench_file = os.path.join(get_benchmark_base_path(),"expected_outputs", f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
         result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
         results.append(result)
         # print("\nBenchmark Cross-check Results:")
@@ -392,9 +403,9 @@ for task_dict in task_list_dicts:
     print(task_name)
 
     # process all answers of task
-    tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=False, task_name=task_name)
+    tool_results = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
     make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
 
     #process only answers from LLM stable behaviour 
-    tool_results = tool_usage_details(benchmark_results_dir, timestamp, process_finished_calls_only=True, task_name=task_name)
+    tool_results = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
     make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
