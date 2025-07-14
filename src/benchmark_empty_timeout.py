@@ -37,7 +37,10 @@ current_file_path = os.path.abspath(__file__)
 # Extract the directory name from the file path
 current_dir_path = os.path.dirname(current_file_path)
 
+# ToDo CONFIG: setup working dir and adjust paths accordingly
 working_dir = current_dir_path
+
+
 benchmark_results_dir = os.path.join(working_dir,"benchmark_results")
 os.makedirs(benchmark_results_dir,exist_ok=True)
 set_benchmark_base_path(f"{benchmark_results_dir}")
@@ -143,9 +146,16 @@ def summarize_logfile(logfile_path):
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
 
+# return the logfiles of named task
 def list_finished_crew_files(directory, session_id, process_finished_calls_only=True, task_name=""):
     files = []
-    # Retrieve finished_iterations only if needed.
+    # Get finished_iterations from benchmak_tmp.json file only if needed.
+    '''
+    Sample
+       "finished_crew_iteration": [
+        1,
+        2
+    ]'''
     finished_iterations = get_finished_crew_iterations() if process_finished_calls_only else None
 
     # Construct regex pattern to match filenames like:
@@ -396,6 +406,13 @@ def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULT
 
 # get task_names and check which ones to analyse
 # analyse only tasks where we find an "expected_output_<session_id>_<task_name>....log file"
+'''
+Sample of task_list_dicts
+"task_details": [
+        "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-3.2-8b-instruct TASK_MODEL_TEMP:0.0",
+        "TASK_NAME:web_searching TASK_MODEL_NAME:openai/meta-llama-3.1-8b-instruct TASK_MODEL_TEMP:0.0"
+    ],
+'''
 task_list_dicts = get_benchmark_task_details()
 for task_dict in task_list_dicts:
     print(task_dict)
