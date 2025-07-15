@@ -211,7 +211,7 @@ def summarize_tool_usage(file_path):
 
 
 
-def parse_log_file(file_path):
+def parse_tool_use_log_file(file_path):
     """
     Parses a log file and returns a list of tuples (query, tool_used).
 
@@ -233,7 +233,7 @@ def parse_log_file(file_path):
         
     return result
 
-def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
+def crosscheck_tool_use_benchmark(expected_file="expected_output_benchmark_A.txt",
                          benchmark_file="benchmark_ts_action_call_it3.log"):
     """
     Cross-checks the expected benchmark log against the actual benchmark output.
@@ -253,8 +253,8 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
             occurrences where the wrong tool was used, and any unexpected queries.
     """
     # Parse both files
-    expected_logs = parse_log_file(expected_file)
-    benchmark_logs = parse_log_file(benchmark_file)
+    expected_logs = parse_tool_use_log_file(expected_file)
+    benchmark_logs = parse_tool_use_log_file(benchmark_file)
     
     # Build dictionary for expected queries: query -> dict(tool, count)
     expected_dict = {}
@@ -326,7 +326,7 @@ def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_on
         task_log_path = os.path.join(benchmark_logs_dir, task_log)
         try:
             expected_bench_file = os.path.join(get_benchmark_base_path(),"expected_outputs", f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
-            result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=task_log_path)
+            result = crosscheck_tool_use_benchmark(expected_file=expected_bench_file,benchmark_file=task_log_path)
             results.append(result)
         except Exception as e:
             print(f"TASK: {task_name}: No expected output found. Skipping comparison of retrieved output and expected output. Error: {e}")
