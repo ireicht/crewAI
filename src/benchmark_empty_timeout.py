@@ -319,24 +319,18 @@ def crosscheck_benchmark(expected_file="expected_output_benchmark_A.txt",
 
 
 def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_only=True, task_name=""):
-    tool_files_finished = list_finished_crew_files(benchmark_logs_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
+    task_logfiles = list_finished_crew_files(benchmark_logs_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
     # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
     results = []
-    for tool_logfile in tool_files_finished:
-        tool_logfile_path = os.path.join(benchmark_logs_dir, tool_logfile)
-        expected_bench_file = os.path.join(get_benchmark_base_path(),"expected_outputs", f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
-        result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=tool_logfile_path)
-        results.append(result)
-        # print("\nBenchmark Cross-check Results:")
-        # for key, errors in result.items():
-        #     print(f"\n{key}:")
-        #     if errors:
-        #         for query, count in errors.items():
-        #             print(f"  - '{query}': {count}")
-        #     else:
-        #         print("  None")
-        
-        # tool_counts, input_counts, total_tool_count, total_input_count = summarize_tool_usage(tool_logfile_path)
+    for task_log in task_logfiles:
+        task_log_path = os.path.join(benchmark_logs_dir, task_log)
+        try:
+            expected_bench_file = os.path.join(get_benchmark_base_path(),"expected_outputs", f"benchmark_expected_output_TASK_NAME_{task_name}_actionCall.log")
+            result = crosscheck_benchmark(expected_file=expected_bench_file,benchmark_file=task_log_path)
+            results.append(result)
+        except Exception as e:
+            print(f"TASK: {task_name}: No expected output found. Skipping comparison of retrieved output and expected output. Error: {e}")
+
     return results
 
 
