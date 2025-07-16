@@ -2,7 +2,8 @@ from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task, callback
 from crewai.agents.crew_agent_executor import ToolResult
 from crewai.agents.parser import AgentAction, AgentFinish
-from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults #uv pip install langchain_community duckduckgo-search
+#from langchain_community.tools import DuckDuckGoSearchRun, DuckDuckGoSearchResults #uv pip install langchain_community duckduckgo-search
+from duckduckgo_search import DDGS
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
@@ -45,8 +46,10 @@ class myDuckDuckGoSearchTool(BaseTool):
 		duckduckgo_tool = DuckDuckGoSearchResults()
 		# check if query has nested queries
 		if isinstance(query, str):
-			duckduckgo_tool = DuckDuckGoSearchResults()
-			response = duckduckgo_tool.invoke(query)
+			# duckduckgo_tool = DuckDuckGoSearchResults()
+			# response = duckduckgo_tool.invoke(query)
+			response = DDGS().text(query, max_results=5)
+			print(response)
 			return response
 		elif isinstance(query, dict):
 			try:
@@ -58,7 +61,8 @@ class myDuckDuckGoSearchTool(BaseTool):
 				search_string = " ".join([f"{k}:{v}" for k, v in query.items()])
 
 			
-			response = duckduckgo_tool.invoke(search_string)
+			# response = duckduckgo_tool.invoke(search_string)
+			response = DDGS().text(search_string, max_results=5)
 			print(f"DDG_Response: {response}")
 			# return response
 			return response
