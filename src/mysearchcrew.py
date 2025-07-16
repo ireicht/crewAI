@@ -236,4 +236,6 @@ class MySearchCrew():
 
 	def generateFileName(self, myTask:Task):
 		benchmark_SESSION_ID = get_benchmark_session_id_mod()	
-		return sanitize_filename(f'task_benchmark_{benchmark_SESSION_ID}-task_name_{myTask.name}_ts_{self.ts}')
+		# return sanitize_filename(f'task_benchmark_{benchmark_SESSION_ID}-task_name_{myTask.name}_ts_{self.ts}')
+		benchmark_iteration_cnt = get_benchmark_crew_iteration()
+		return sanitize_filename(f'task_benchmark_{benchmark_SESSION_ID}-task_name_{myTask.name}_it_{benchmark_iteration_cnt}')
