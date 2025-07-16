@@ -43,7 +43,7 @@ class myDuckDuckGoSearchTool(BaseTool):
 		self.cnt += 1
 		print(f"\nDDGO-query:{query}\n")
 		# Ensure the DuckDuckGoSearchRun is invoked properly.
-		duckduckgo_tool = DuckDuckGoSearchResults()
+		# duckduckgo_tool = DuckDuckGoSearchResults()
 		# check if query has nested queries
 		if isinstance(query, str):
 			# duckduckgo_tool = DuckDuckGoSearchResults()
