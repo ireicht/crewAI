@@ -197,7 +197,7 @@ class MySearchCrew():
 			config=self.tasks_config['search_terms_task'],
 		)
 		# define where to store the result output of the task. Filenaming matters when analyzing the results
-		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'task_result_outputDir', f"{self.generateFileName(myTask)}.md")
 		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
@@ -207,7 +207,7 @@ class MySearchCrew():
 			config=self.tasks_config['web_search_task'],
 		)
 		# define where to store the result output of the task. Filenaming matters when analyzing the results
-		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'task_result_outputDir', f"{self.generateFileName(myTask)}.md")
 		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
 		return myTask
 
@@ -217,7 +217,7 @@ class MySearchCrew():
 			config=self.tasks_config['reporting_task'],
 		)
 		# This task not yet included in benchmarking
-		myTask.output_file=os.path.join(get_benchmark_base_path(),'outputWebSearch', f"{self.generateFileName(myTask)}.md")
+		myTask.output_file=os.path.join(get_benchmark_base_path(),'task_result_outputDir', f"{self.generateFileName(myTask)}.md")
 		return myTask
 
 	@crew
