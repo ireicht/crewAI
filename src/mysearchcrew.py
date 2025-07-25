@@ -49,7 +49,7 @@ class myDuckDuckGoSearchTool(BaseTool):
 			# duckduckgo_tool = DuckDuckGoSearchResults()
 			# response = duckduckgo_tool.invoke(query)
 			response = DDGS().text(query, max_results=5)
-			print(response)
+			print(f"DDGS response: \n{response}")
 			return response
 		elif isinstance(query, dict):
 			try:
@@ -60,16 +60,11 @@ class myDuckDuckGoSearchTool(BaseTool):
 			if not search_string:
 				search_string = " ".join([f"{k}:{v}" for k, v in query.items()])
 
-			
 			# response = duckduckgo_tool.invoke(search_string)
 			response = DDGS().text(search_string, max_results=5)
 			print(f"DDG_Response: {response}")
 			# return response
 			return response
-
-	def _get_tool(self):
-		# Create an instance of the tool when needed
-		return myDuckDuckGoSearchTool()
 
 
 
