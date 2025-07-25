@@ -12,17 +12,17 @@ from igi_helper import write_log, get_variable_value, format_duration, set_bench
 from collections import Counter
 import re
 import os
-import json
+import filecmp
 
 ### START THIS SCRIPT in PARENT DIR of src/...
 
 
-do_only_call_summarize = False
+do_only_call_summarize = True
 
 # Define the number of iterations
 iterations = 3
 
-timestamp = "26-05-2025_12-26-51" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "25-07-2025_19-51-11" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -174,6 +174,32 @@ def list_finished_crew_files(directory, session_id, process_finished_calls_only=
                 files.append(filename)
     return files
 
+def list_finished_task_result_files(directory, session_id, process_finished_calls_only=True, task_name=""):
+    files = []
+    # Get finished_iterations from benchmak_tmp.json file only if needed.
+    '''
+    Sample
+       "finished_crew_iteration": [
+        1,
+        2
+    ]'''
+    finished_iterations = get_finished_crew_iterations() if process_finished_calls_only else None
+
+    # Construct regex pattern to match filenames like:
+    # "benchmark_01010101_action_call_it_<number>.log"
+    pattern = re.compile(r"^benchmark_" + re.escape(session_id) + re.escape(f"_TASK_NAME_{task_name}") + r"_action_call_it_(\d+)\.log$")
+
+    for filename in os.listdir(directory):
+        # Use regex matching to check the filename and extract the number.
+        match = pattern.match(filename)
+        if match:
+            iteration = int(match.group(1))
+            if process_finished_calls_only:
+                if iteration in finished_iterations:
+                    files.append(filename)
+            else:
+                files.append(filename)
+    return files
 
 def summarize_tool_usage(file_path):
     # Initialize dictionaries to store counts
@@ -210,7 +236,7 @@ def summarize_tool_usage(file_path):
 
 
 
-
+# Logfile specific function
 def parse_tool_use_log_file(file_path):
     """
     Parses a log file and returns a list of tuples (query, tool_used).
@@ -233,6 +259,8 @@ def parse_tool_use_log_file(file_path):
         
     return result
 
+
+# This function is specific to the ToolUsage Outputformat of the logfiles
 def crosscheck_tool_use_benchmark(expected_file="expected_output_benchmark_A.txt",
                          benchmark_file="benchmark_ts_action_call_it3.log"):
     """
@@ -317,9 +345,31 @@ def crosscheck_tool_use_benchmark(expected_file="expected_output_benchmark_A.txt
 
 
 
+'''
+Logfile specific function
 
+Sample returned datastructure. 
+results:
+{
+  "missing_queries": {
+    "{\"query\": \"History of LLMs from 2010 until 2024\"}": 1,
+    "{\"query\": \"Latest jailbreak of LLM 2024\"}": 1
+  },
+  "duplicate_queries": {},
+  "wrong_tool_usage": {},
+  "unexpected_queries": {
+    "{\"query\": \"History of LLMs from 2010 until 2025\"}": 1,
+    "{\"query\": \"Latest jailbreak of LLM 2025\"}": 1
+  }
+}
+'''
 def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_only=True, task_name=""):
     task_logfiles = list_finished_crew_files(benchmark_logs_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
+    
+    #ToDo Task Result .md files and info. do someting with task_result_info and expected files, diff between
+    # action log files and .md expected files
+    task_result_info
+    
     # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
     results = []
     for task_log in task_logfiles:
@@ -333,6 +383,39 @@ def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_on
 
     return results
 
+'''
+returns a list of true or false values
+True: result matches expected output
+False: result does not match expected output
+'''
+def task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=""):
+    task_resultfiles = []
+    finished_iterations = get_finished_crew_iterations() if process_finished_calls_only else None
+    
+    # Filter and print elements with the desired timestamp
+    filtered_elements = [entry for entry in task_result_info if entry["timestamp"] == session_id]
+
+    for task_element in filtered_elements:
+        task_sessionid = task_element.get("timestamp")
+        iteration = task_element.get("iteration")
+        filename = task_element.get("filepath")
+        if process_finished_calls_only:
+            if iteration in finished_iterations:
+                task_resultfiles.append(filename)
+        else:
+            task_resultfiles.append(filename)
+    
+    results = []
+    for task_output_file in task_resultfiles:
+        
+        try:
+            expected_bench_file = os.path.join(get_benchmark_base_path(),"expected_outputs", f"benchmark_expected_output_TASK_NAME_{task_name}_result.md")
+            has_passed = filecmp.cmp(expected_bench_file, task_output_file)
+            results.append(has_passed)
+        except Exception as e:
+            print(f"TASK: {task_name}: No expected output found. Skipping comparison of retrieved output and expected output. Error: {e}")
+
+    return results
 
 summarize_logfile(f"{logfile_path}")
 
@@ -397,7 +480,84 @@ def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULT
         else:
             print("  None")
 
+def extract_task_info(filename):
+    # Define the regex pattern for matching the filename
+    pattern = r'task_benchmark_(?P<timestamp>\d{2}-\d{2}-\d{4}_\d{2}-\d{2}-\d{2})-task_name_(?P<task_name>[\w_]+)(_it_(?P<iteration>\d+)).md'
 
+    # Match the filename against the pattern
+    match = re.match(pattern, filename)
+    if not match:
+        return None
+
+    # Extract the timestamp, task name, and iteration (if present)
+    timestamp = match.group('timestamp')
+    task_name = match.group('task_name')
+    iteration = match.group('iteration')
+
+    return {
+        'timestamp': timestamp,
+        'task_name': task_name,
+        'iteration': int(iteration) if iteration else None
+    }
+
+def scan_directory_for_task_files(directory):
+    # Initialize the result dictionary
+    task_benchmark_results = {}
+
+    # Scan the directory for "*.md" files
+    for filename in os.listdir(directory):
+        if filename.endswith('.md'):
+            # Get the full file path
+            filepath = os.path.join(directory, filename)
+
+            # Extract task information from the filename
+            task_info = extract_task_info(filename)
+            if task_info:
+                # Get the task name
+                task_name = task_info['task_name']
+
+                # Initialize a list for this task if it doesn't exist
+                if task_name not in task_benchmark_results:
+                    task_benchmark_results[task_name] = []
+
+                # Append the result to the list for this task
+                task_benchmark_results[task_name].append({
+                    'timestamp': task_info['timestamp'],
+                    'iteration': task_info['iteration'],
+                    'filepath': filepath
+                })
+
+    return task_benchmark_results
+
+# get the task results of .md files
+'''
+Sample structure of task_results
+{
+  "web_searching": [
+    {
+      "timestamp": "16-07-2025_20-35-30",
+      "iteration": 1,
+      "filepath": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/outputWebSearch/task_benchmark_16-07-2025_20-35-30-task_name_web_searching_it_1.md"
+    }
+  ],
+  "search_terms": [
+    {
+      "timestamp": "16-07-2025_20-35-30",
+      "iteration": 1,
+      "filepath": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/outputWebSearch/task_benchmark_16-07-2025_20-35-30-task_name_search_terms_it_1.md"
+    },
+    {
+      "timestamp": "16-07-2025_20-35-30",
+      "iteration": 2,
+      "filepath": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/outputWebSearch/task_benchmark_16-07-2025_20-35-30-task_name_search_terms_it_2.md"
+    }
+  ]
+}
+'''
+
+task_result_directory_path = os.path.join(get_benchmark_base_path(),'task_result_outputDir')
+# print(task_result_directory_path)
+task_results = scan_directory_for_task_files(task_result_directory_path)
 # get task_names and check which ones to analyse
 # analyse only tasks where we find an "expected_output_<session_id>_<task_name>....log file"
 '''
@@ -411,12 +571,29 @@ task_list_dicts = get_benchmark_task_details()
 for task_dict in task_list_dicts:
     print(task_dict)
     task_name = task_dict.get("TASK_NAME")
-    print(task_name)
+    print(f"Task Name: {task_name}")
+    task_result_info = task_results.get(task_name)
+    # print(f"Task Results: \n{task_result_info}")
 
     # process all answers of task
-    tool_results = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
-    make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+    tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
+    make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+    tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=False, task_name=task_name)
+    # Count the number of True and False values
+    true_count = sum(tool_taskoutput_results)
+    false_count = len(tool_taskoutput_results) - true_count
+
+    print(f"True values: {true_count}")
+    print(f"False values: {false_count}")
+
 
     #process only answers from LLM stable behaviour 
-    tool_results = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
-    make_stats_of_results(tool_results=tool_results, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
+    tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
+    make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
+    tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=task_name)
+    # Count the number of True and False values
+    true_count = sum(tool_taskoutput_results)
+    false_count = len(tool_taskoutput_results) - true_count
+
+    print(f"True values: {true_count}")
+    print(f"False values: {false_count}")
