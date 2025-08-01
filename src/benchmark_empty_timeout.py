@@ -557,7 +557,16 @@ Sample structure of task_results
 
 task_result_directory_path = os.path.join(get_benchmark_base_path(),'task_result_outputDir')
 # print(task_result_directory_path)
+'''
+Sample of task_results:
+timestamp equals sessionID
+{
+'web_searching': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_3.md'},...
+'search_terms': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_search_terms_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_search_terms_it_3.md'},...
+}
+'''
 task_results = scan_directory_for_task_files(task_result_directory_path)
+# print(f"task_results:{task_results}")
 # get task_names and check which ones to analyse
 # analyse only tasks where we find an "expected_output_<session_id>_<task_name>....log file"
 '''
@@ -569,6 +578,10 @@ Sample of task_list_dicts
 '''
 task_list_dicts = get_benchmark_task_details()
 for task_dict in task_list_dicts:
+    # collected information:
+    # task_dict: "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-3.2-8b-instruct TASK_MODEL_TEMP:0.0",...
+    # task_result_info: 'web_searching': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_3.md'},...
+
     print(task_dict)
     task_name = task_dict.get("TASK_NAME")
     print(f"Task Name: {task_name}")
