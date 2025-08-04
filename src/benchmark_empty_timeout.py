@@ -17,7 +17,7 @@ import filecmp
 ### START THIS SCRIPT in PARENT DIR of src/...
 
 
-do_only_call_summarize = True
+do_only_call_summarize = False
 
 # Define the number of iterations
 iterations = 3
@@ -113,6 +113,7 @@ set_benchmark_session_id_mod(f"''")
 set_benchmark_log_file_path(f"''")
 
 def summarize_logfile(logfile_path):
+    summary = {}
 
     # Regular expression to match lines containing 'bnchmrk'
     pattern = re.compile(r'\b(bnchmrk_[^:]+)')
@@ -129,14 +130,21 @@ def summarize_logfile(logfile_path):
                 bnchmrk_counter[term] += 1
 
     total_iterations = sum(bnchmrk_counter.values())
+    summary["crew_sum_bnchmrk_iterations"] = total_iterations
 
     # Print the summary
     print("==== SUMMARY ====")
     print(f"Iterations Total: {total_iterations} (100%)")
 
+    '''Sample
+    sum_bnchmrk_llm_empty_response = 1 (33%)
+    sum_bnchmrk_successfully_finished = 2 (67%)
+    '''
     for term, count in bnchmrk_counter.items():
         percentage = (count / total_iterations) * 100
         print(f"sum_{term} = {count} ({percentage:.0f}%)")
+        summary[f"crew_sum_{term}#"] = f"{count}"
+        summary[f"crew_sum_{term}%"] = f"{percentage:.0f}%"
 
     # user_input = input(f"Write Summary to {logfile_path}?[(y)es]:")
     user_input = "y"
@@ -145,6 +153,8 @@ def summarize_logfile(logfile_path):
         for term, count in bnchmrk_counter.items():
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
+    
+    return summary
 
 # return the logfiles of named task
 def list_finished_crew_files(directory, session_id, process_finished_calls_only=True, task_name=""):
@@ -417,7 +427,7 @@ def task_result_details(task_result_info, session_id=timestamp,process_finished_
 
     return results
 
-summarize_logfile(f"{logfile_path}")
+summary_crew_iterations = summarize_logfile(f"{logfile_path}")
 
 def merge_results(results_list):
     # Initialize the merged dictionary with empty dictionaries for each key.
@@ -445,10 +455,14 @@ def merge_results(results_list):
     return merged
 
 def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULTS"):
+    summary = {}
+   
     finished_total = len(tool_results)
+    summary["tool_total_runs"] = finished_total
+
     if finished_total <= 0:
         print(f"\nNo results to evaluate. Num_ool_results: {finished_total}")
-        return
+        return summary
     
     finished_wrong = 0
     for result in tool_results:
@@ -479,6 +493,12 @@ def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULT
                 print(f"  - '{query}': {count}")
         else:
             print("  None")
+    
+    
+    summary["tool_wrong_usage"] = finished_wrong
+    summary["tool_right_usage"] = finished_correct
+    summary["tool_usage_details"] = merged_tool_results
+    return summary
 
 def extract_task_info(filename):
     # Define the regex pattern for matching the filename
@@ -576,8 +596,18 @@ Sample of task_list_dicts
         "TASK_NAME:web_searching TASK_MODEL_NAME:openai/meta-llama-3.1-8b-instruct TASK_MODEL_TEMP:0.0"
     ],
 '''
+
+# get misc info
+# ToDo Processor
+
 task_list_dicts = get_benchmark_task_details()
+
+all_results_compiled = []
+
+all_results_compiled.append(summary_crew_iterations)
+
 for task_dict in task_list_dicts:
+    all_task_results_compiled = {}
     # collected information:
     # task_dict: "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-3.2-8b-instruct TASK_MODEL_TEMP:0.0",...
     # task_result_info: 'web_searching': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_3.md'},...
@@ -588,9 +618,18 @@ for task_dict in task_list_dicts:
     task_result_info = task_results.get(task_name)
     # print(f"Task Results: \n{task_result_info}")
 
+    all_task_results_compiled["session_id"] = f"{timestamp}"
+    
+    all_task_results_compiled["task_name"] = task_name
+    all_task_results_compiled["task_iterations"] = iterations
+
+    all_task_results_compiled["model_name"] = task_dict.get("TASK_MODEL_NAME", "na")
+    all_task_results_compiled["model_temp"] = task_dict.get("TASK_MODEL_TEMP", "na")
+
+
     # process all answers of task
     tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
-    make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+    tool_summary = make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
     tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=False, task_name=task_name)
     # Count the number of True and False values
     true_count = sum(tool_taskoutput_results)
@@ -602,7 +641,7 @@ for task_dict in task_list_dicts:
 
     #process only answers from LLM stable behaviour 
     tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
-    make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
+    tool_summary = make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
     tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=task_name)
     # Count the number of True and False values
     true_count = sum(tool_taskoutput_results)
@@ -610,3 +649,9 @@ for task_dict in task_list_dicts:
 
     print(f"True values: {true_count}")
     print(f"False values: {false_count}")
+
+    all_results_compiled.append(all_task_results_compiled)
+
+print("\nALL_RESULTS_COMPILED\n")
+for item_i in all_results_compiled:
+    print(item_i)
