@@ -17,12 +17,12 @@ import filecmp
 ### START THIS SCRIPT in PARENT DIR of src/...
 
 
-do_only_call_summarize = False
+do_only_call_summarize = True
 
 # Define the number of iterations
 iterations = 3
 
-timestamp = "25-07-2025_19-51-11" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -458,7 +458,7 @@ def make_stats_of_results(tool_results, description_str="ANALYSIS of TOOL RESULT
     summary = {}
    
     finished_total = len(tool_results)
-    summary["tool_total_runs"] = finished_total
+    summary["tool_total_calls"] = finished_total
 
     if finished_total <= 0:
         print(f"\nNo results to evaluate. Num_ool_results: {finished_total}")
@@ -603,7 +603,9 @@ Sample of task_list_dicts
 task_list_dicts = get_benchmark_task_details()
 
 all_results_compiled = []
-
+summary_crew_iterations["crew_session_id"] = f"{timestamp}"
+summary_crew_iterations["crew_duration"] = f"{formatted_duration}"
+summary_crew_iterations["crew_note"] = f"Symbol *: includes results from unstable model behaviour"
 all_results_compiled.append(summary_crew_iterations)
 
 for task_dict in task_list_dicts:
@@ -618,19 +620,19 @@ for task_dict in task_list_dicts:
     task_result_info = task_results.get(task_name)
     # print(f"Task Results: \n{task_result_info}")
 
-    all_task_results_compiled["session_id"] = f"{timestamp}"
+
     
     all_task_results_compiled["task_name"] = task_name
-    all_task_results_compiled["task_iterations"] = iterations
-
-    all_task_results_compiled["model_name"] = task_dict.get("TASK_MODEL_NAME", "na")
-    all_task_results_compiled["model_temp"] = task_dict.get("TASK_MODEL_TEMP", "na")
+    all_task_results_compiled["task_model_name"] = task_dict.get("TASK_MODEL_NAME", "na")
+    all_task_results_compiled["task_model_temp"] = task_dict.get("TASK_MODEL_TEMP", "na")
 
 
     # process all answers of task
     tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
     tool_summary = make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
+    print(f"tool_summary:{tool_summary}")
     tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=False, task_name=task_name)
+    print(f"task_output_results:{tool_taskoutput_results}")
     # Count the number of True and False values
     true_count = sum(tool_taskoutput_results)
     false_count = len(tool_taskoutput_results) - true_count
@@ -640,18 +642,51 @@ for task_dict in task_list_dicts:
 
 
     #process only answers from LLM stable behaviour 
-    tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
-    tool_summary = make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
-    tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=task_name)
+    tool_results_logfiles_stable = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
+    tool_summary_stable = make_stats_of_results(tool_results=tool_results_logfiles_stable, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
+    print(f"tool_summary_stable:{tool_summary_stable}")
+    tool_taskoutput_results_stable = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=task_name)
+    print(f"task_utput_results_stable:{tool_taskoutput_results_stable}")
     # Count the number of True and False values
-    true_count = sum(tool_taskoutput_results)
-    false_count = len(tool_taskoutput_results) - true_count
+    true_count_stable = sum(tool_taskoutput_results_stable)
+    false_count_stable = len(tool_taskoutput_results_stable) - true_count_stable
 
-    print(f"True values: {true_count}")
-    print(f"False values: {false_count}")
+    print(f"True values: {true_count_stable}")
+    print(f"False values: {false_count_stable}")
+
+    # all_task_results_compiled["task_tool_usage"] = value if value != 0 else "-"
+    task_tool_usage_calls = tool_summary.get("tool_total_calls", "na")
+    task_tool_usage_right = tool_summary.get("tool_right_usage", "na")
+    task_tool_usage_wrong = tool_summary.get("tool_wrong_usage", "na")
+    #task_tool_usage_details = tool_summary.get("tool_usage_details", "na")
+
+    all_task_results_compiled["task_tool_usage_calls"] = task_tool_usage_calls if task_tool_usage_calls != 0 else "-"
+    all_task_results_compiled["task_tool_usage_pass%"] = f"{(task_tool_usage_right / task_tool_usage_calls *100):.0f}%" if task_tool_usage_right != "na" else "-"
+    all_task_results_compiled["task_tool_usage_fail%"] = f"{(task_tool_usage_wrong / task_tool_usage_calls *100):.0f}%" if task_tool_usage_wrong != "na" else "-"
+    all_task_results_compiled["task_tool_usage_pass#"] = task_tool_usage_right if task_tool_usage_right != "na" else "-"
+    all_task_results_compiled["task_tool_usage_fail#"] = task_tool_usage_wrong if task_tool_usage_wrong != "na" else "-"
+    
+
+    # task_output
+    task_tool_output_matches_stable = true_count_stable if len(tool_taskoutput_results_stable) != 0 else "-"
+    task_tool_output_matches_stable_p = f"{((task_tool_output_matches_stable / len(tool_taskoutput_results_stable))*100):.0f}%" if len(tool_taskoutput_results_stable) != 0 else "-"
+    task_tool_output_matches = true_count if len(tool_taskoutput_results) != 0 else "-"
+    task_tool_output_matches_p = f"{((task_tool_output_matches / len(tool_taskoutput_results))*100):.0f}%" if len(tool_taskoutput_results) != 0 else "-"
+    
+    task_tool_output_mismatches_stable = false_count_stable if len(tool_taskoutput_results_stable) != 0 else "-"
+    task_tool_output_mismatches_stable_p = f"{((task_tool_output_mismatches_stable / len(tool_taskoutput_results_stable))*100):.0f}%" if len(tool_taskoutput_results_stable) != 0 else "-"
+    task_tool_output_mismatches = false_count if len(tool_taskoutput_results) != 0 else "-"
+    task_tool_output_mismatches_p = f"{((task_tool_output_mismatches / len(tool_taskoutput_results))*100):.0f}%" if len(tool_taskoutput_results) != 0 else "-"
+
+    all_task_results_compiled["task_output_matching%"] = f"{task_tool_output_matches_stable_p} (*:{task_tool_output_matches_p})"
+    all_task_results_compiled["task_output_mismatch%"] = f"{task_tool_output_mismatches_stable_p} (*:{task_tool_output_mismatches_p})"
+    all_task_results_compiled["task_output_matching#"] = f"{task_tool_output_matches_stable} (*:{task_tool_output_matches})"
+    all_task_results_compiled["task_output_mismatch#"] = f"{task_tool_output_mismatches_stable} (*:{task_tool_output_mismatches})"
 
     all_results_compiled.append(all_task_results_compiled)
 
 print("\nALL_RESULTS_COMPILED\n")
 for item_i in all_results_compiled:
-    print(item_i)
+    for k, v in item_i.items():
+        print(f"{k}: {v}")
+    print("")
