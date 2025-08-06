@@ -118,6 +118,11 @@ class MySearchCrew():
 			print(f"agent finish: \nCLBK_REP_Finish_Thought: {output.thought}\nCLBK_REP_Finish_Output: {output.output}\nCLBK_REP_Finish_Text: {output.text}")
 		#if agent finish or agent action or Toolresult
 	
+	def compile_task_model_details(self, myTask:Task) -> str:
+		model_details = f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature} TASK_MODEL_SEED:{myTask.agent.llm.seed}, TASK_MODEL_FREQ_PENALTY:{myTask.agent.llm.frequency_penalty} TASK_MODEL_TOP_K:{myTask.agent.llm.top_p}"
+		print(model_details)
+		return model_details
+
 	try:
 		myllm_llama3_8b = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, seed=42, frequency_penalty=2.0)
 		myllm_llama3_8b_duckduckGoSearch = LLM(api_key="fsdf", model="openai/meta-llama-3.1-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=12000, timeout=45, seed=42, top_k=1)
@@ -193,7 +198,7 @@ class MySearchCrew():
 		)
 		# define where to store the result output of the task. Filenaming matters when analyzing the results
 		myTask.output_file=os.path.join(get_benchmark_base_path(),'task_result_outputDir', f"{self.generateFileName(myTask)}.md")
-		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
+		set_benchmark_task_details(self.compile_task_model_details(myTask))
 		return myTask
 
 	@task
@@ -203,7 +208,7 @@ class MySearchCrew():
 		)
 		# define where to store the result output of the task. Filenaming matters when analyzing the results
 		myTask.output_file=os.path.join(get_benchmark_base_path(),'task_result_outputDir', f"{self.generateFileName(myTask)}.md")
-		set_benchmark_task_details(f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature}")
+		set_benchmark_task_details(self.compile_task_model_details(myTask))
 		return myTask
 
 	# @task

@@ -22,7 +22,8 @@ do_only_call_summarize = True
 # Define the number of iterations
 iterations = 3
 
-timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
+# timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -130,7 +131,7 @@ def summarize_logfile(logfile_path):
                 bnchmrk_counter[term] += 1
 
     total_iterations = sum(bnchmrk_counter.values())
-    summary["crew_sum_bnchmrk_iterations"] = total_iterations
+    summary["crew_sum_bnchmrk_iterations"] = f"{total_iterations}"
 
     # Print the summary
     print("==== SUMMARY ====")
@@ -602,12 +603,12 @@ Sample of task_list_dicts
 
 task_list_dicts = get_benchmark_task_details()
 
-all_results_compiled = []
+all_results_compiled = {}
 summary_crew_iterations["crew_session_id"] = f"{timestamp}"
 summary_crew_iterations["crew_duration"] = f"{formatted_duration}"
 summary_crew_iterations["crew_note"] = f"Symbol *: includes results from unstable model behaviour"
-all_results_compiled.append(summary_crew_iterations)
-
+all_results_compiled['crew']=summary_crew_iterations
+all_results_compiled['tasks']=[]
 for task_dict in task_list_dicts:
     all_task_results_compiled = {}
     # collected information:
@@ -630,29 +631,29 @@ for task_dict in task_list_dicts:
     # process all answers of task
     tool_results_logfiles = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=False, task_name=task_name)
     tool_summary = make_stats_of_results(tool_results=tool_results_logfiles, description_str="ANALYSIS of ALL LLM answer ATTEMPTS")
-    print(f"tool_summary:{tool_summary}")
+    #print(f"tool_summary:{tool_summary}")
     tool_taskoutput_results = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=False, task_name=task_name)
-    print(f"task_output_results:{tool_taskoutput_results}")
+    #print(f"task_output_results:{tool_taskoutput_results}")
     # Count the number of True and False values
     true_count = sum(tool_taskoutput_results)
     false_count = len(tool_taskoutput_results) - true_count
 
-    print(f"True values: {true_count}")
-    print(f"False values: {false_count}")
+    print(f"Task output matching: {true_count}")
+    print(f"Task output mismatch: {false_count}")
 
 
     #process only answers from LLM stable behaviour 
     tool_results_logfiles_stable = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
     tool_summary_stable = make_stats_of_results(tool_results=tool_results_logfiles_stable, description_str="ANALYSIS of stable LLM answer attempts (sum_bnchmrk_successfully_finished)")
-    print(f"tool_summary_stable:{tool_summary_stable}")
+    #print(f"tool_summary_stable:{tool_summary_stable}")
     tool_taskoutput_results_stable = task_result_details(task_result_info, session_id=timestamp,process_finished_calls_only=True, task_name=task_name)
-    print(f"task_utput_results_stable:{tool_taskoutput_results_stable}")
+    #print(f"task_utput_results_stable:{tool_taskoutput_results_stable}")
     # Count the number of True and False values
     true_count_stable = sum(tool_taskoutput_results_stable)
     false_count_stable = len(tool_taskoutput_results_stable) - true_count_stable
 
-    print(f"True values: {true_count_stable}")
-    print(f"False values: {false_count_stable}")
+    print(f"Task output matching: {true_count_stable}")
+    print(f"Task output mismatch: {false_count_stable}")
 
     # all_task_results_compiled["task_tool_usage"] = value if value != 0 else "-"
     task_tool_usage_calls = tool_summary.get("tool_total_calls", "na")
@@ -660,12 +661,29 @@ for task_dict in task_list_dicts:
     task_tool_usage_wrong = tool_summary.get("tool_wrong_usage", "na")
     #task_tool_usage_details = tool_summary.get("tool_usage_details", "na")
 
-    all_task_results_compiled["task_tool_usage_calls"] = task_tool_usage_calls if task_tool_usage_calls != 0 else "-"
-    all_task_results_compiled["task_tool_usage_pass%"] = f"{(task_tool_usage_right / task_tool_usage_calls *100):.0f}%" if task_tool_usage_right != "na" else "-"
-    all_task_results_compiled["task_tool_usage_fail%"] = f"{(task_tool_usage_wrong / task_tool_usage_calls *100):.0f}%" if task_tool_usage_wrong != "na" else "-"
-    all_task_results_compiled["task_tool_usage_pass#"] = task_tool_usage_right if task_tool_usage_right != "na" else "-"
-    all_task_results_compiled["task_tool_usage_fail#"] = task_tool_usage_wrong if task_tool_usage_wrong != "na" else "-"
+    all_task_tool_usage_calls = task_tool_usage_calls if task_tool_usage_calls != 0 else "-"
+    all_task_tool_usage_pass_p = f"{(task_tool_usage_right / task_tool_usage_calls *100):.0f}%" if task_tool_usage_right != "na" else "-"
+    all_task_tool_usage_fail_p = f"{(task_tool_usage_wrong / task_tool_usage_calls *100):.0f}%" if task_tool_usage_wrong != "na" else "-"
+    all_task_tool_usage_pass = task_tool_usage_right if task_tool_usage_right != "na" else "-"
+    all_task_tool_usage_fail = task_tool_usage_wrong if task_tool_usage_wrong != "na" else "-"
     
+
+    task_tool_usage_calls_stable = tool_summary_stable.get("tool_total_calls", "na")
+    task_tool_usage_right_stable = tool_summary_stable.get("tool_right_usage", "na")
+    task_tool_usage_wrong_stable = tool_summary_stable.get("tool_wrong_usage", "na")
+
+    all_task_tool_usage_calls_stable = task_tool_usage_calls_stable if task_tool_usage_calls_stable != 0 else "-"
+    all_task_tool_usage_pass_p_stable = f"{(task_tool_usage_right_stable / task_tool_usage_calls_stable *100):.0f}%" if task_tool_usage_right_stable != "na" else "-"
+    all_task_tool_usage_fail_p_stable = f"{(task_tool_usage_wrong_stable / task_tool_usage_calls_stable *100):.0f}%" if task_tool_usage_wrong_stable != "na" else "-"
+    all_task_tool_usage_pass_stable = task_tool_usage_right_stable if task_tool_usage_right_stable != "na" else "-"
+    all_task_tool_usage_fail_stable = task_tool_usage_wrong_stable if task_tool_usage_wrong_stable != "na" else "-"
+
+    all_task_results_compiled["task_tool_usage_calls"] = f"{all_task_tool_usage_calls_stable} (*:{all_task_tool_usage_calls})"
+    all_task_results_compiled["task_tool_usage_pass%"] = f"{all_task_tool_usage_pass_p_stable} (*:{all_task_tool_usage_pass_p})"
+    all_task_results_compiled["task_tool_usage_fail%"] = f"{all_task_tool_usage_fail_p_stable} (*:{all_task_tool_usage_fail_p})"
+    all_task_results_compiled["task_tool_usage_pass#"] = f"{all_task_tool_usage_pass_stable} (*:{all_task_tool_usage_pass})"
+    all_task_results_compiled["task_tool_usage_fail#"] = f"{all_task_tool_usage_fail_stable} (*:{all_task_tool_usage_fail})"
+
 
     # task_output
     task_tool_output_matches_stable = true_count_stable if len(tool_taskoutput_results_stable) != 0 else "-"
@@ -683,10 +701,257 @@ for task_dict in task_list_dicts:
     all_task_results_compiled["task_output_matching#"] = f"{task_tool_output_matches_stable} (*:{task_tool_output_matches})"
     all_task_results_compiled["task_output_mismatch#"] = f"{task_tool_output_mismatches_stable} (*:{task_tool_output_mismatches})"
 
-    all_results_compiled.append(all_task_results_compiled)
 
-print("\nALL_RESULTS_COMPILED\n")
-for item_i in all_results_compiled:
-    for k, v in item_i.items():
-        print(f"{k}: {v}")
+    all_results_compiled['tasks'].append(all_task_results_compiled)
+
+
+
+metric_lut = {}
+metric_lut["crew_sum_bnchmrk_iterations"] =             "Iterations"
+metric_lut["crew_sum_bnchmrk_successfully_finished#"] = "Success(#)"
+metric_lut["crew_sum_bnchmrk_successfully_finished%"] = "Success(%)"
+metric_lut["crew_sum_bnchmrk_llm_empty_response#"] =    "Fail (empty llm response #)"
+metric_lut["crew_sum_bnchmrk_llm_empty_response%"] =    "Fail (empty llm response %)"
+metric_lut["crew_duration"] =                           "Duration"
+
+metric_lut["task_model_name"] =         "Model Name"
+metric_lut["task_model_temp'"] =        "Model Temp."
+metric_lut["task_tool_usage_calls'"] =  "Tool calls"
+
+
+
+def format_dict_humanreadable(data:dict) -> dict:
+    formatted_dict = {}
+    for k, v in data.items():
+        
+        if isinstance(v,list): #e.g. list of tasks:
+            #create list instance if not yet present in formatted_dict
+            tmp_list = formatted_dict.get(k,None)
+            if tmp_list == None:
+                formatted_dict[k] = []
+            for v_dict in v:
+                formatted_metric_names = {}
+                for kmetric, vmetric in v_dict.items():
+                    #if metric name has a human readable version, use it, otherwise keep long name
+                    name_hr = metric_lut.get(kmetric,kmetric)
+                    formatted_metric_names[name_hr] = vmetric
+                formatted_dict[k].append(formatted_metric_names)
+        elif isinstance(v, dict):
+            formatted_metric_names = {}
+            for kmetric, vmetric in v.items():
+                #if metric name has a human readable version, use it, otherwise keep long name
+                name_hr = metric_lut.get(kmetric,kmetric)
+                formatted_metric_names[name_hr] = vmetric
+            formatted_dict[k] = formatted_metric_names
+        else:
+            print("WARNING, UNKNOWN TYPE IN COMPILED RESULTS. SKIPPING LUT RENAMING")
+            formatted_dict[k] = v
+        
+    
+    return formatted_dict
+            
+
+
+all_results_compiled_hr = format_dict_humanreadable(all_results_compiled)
+
+print("\nALL_RESULTS_COMPILED HR\n")
+
+for k, v in all_results_compiled_hr.items():
+    print(f"{k}: {v}")
     print("")
+print("")
+
+print(f"datastructure:\n{all_results_compiled_hr}")
+
+
+from typing import Dict, Any
+
+
+def convert_to_markdown(data: Dict[str, Any]) -> str:
+    """
+    Convert nested dictionary with crew info and tasks list to markdown string.
+    The crew table uses the crew_session_id as the header name for values.
+    Each task table is named by its task_name and includes crew_session_id column.
+    """
+    crew = data.get('crew', {})
+    session_id = crew.get('crew_session_id', 'session')
+    md_lines = []
+
+    # Crew section
+    md_lines.append("## Crew")
+    md_lines.append("")  # blank line
+    md_lines.append(f"| Metric | {session_id} |")
+    md_lines.append("|---|---|")
+    # Include all crew fields in insertion order
+    for key, value in crew.items():
+        md_lines.append(f"| {key} | {value} |")
+    md_lines.append("")  # blank line
+
+    # Task sections
+    for task in data.get('tasks', []):
+        name = task.get('task_name', 'task')
+        md_lines.append(f"## Task: {name}")
+        md_lines.append("")  # blank line
+        md_lines.append(f"| Metric | {session_id} |")
+        md_lines.append("|---|---|")
+        for key, value in task.items():
+            if key == 'task_name':
+                continue
+            md_lines.append(f"| {key} | {value} |")
+        md_lines.append("")  # blank line
+
+    return "\n".join(md_lines)
+
+
+def convert_markdown_to_dict(markdown_str: str) -> Dict[str, Any]:
+    """
+    Parse markdown string produced by convert_to_markdown back into original data structure.
+    Skips the markdown separator rows ('---').
+    """
+    result: Dict[str, Any] = {'crew': {}, 'tasks': []}
+    lines = markdown_str.splitlines()
+    current_section = None
+    session_id = None
+
+    crew_header_re = re.compile(r'^## Crew\s*$')
+    task_header_re = re.compile(r'^## Task:\s*(?P<name>.+)$')
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+
+        # Detect crew header
+        if crew_header_re.match(line):
+            current_section = 'crew'
+            # Skip blank line
+            i += 1
+            # Next line is table header
+            header_line = lines[i]
+            parts = [col.strip() for col in header_line.strip().split('|')[1:-1]]
+            # ['Metric', session_id]
+            if len(parts) == 2:
+                session_id = parts[1]
+            # Skip header and separator lines
+            i += 2
+            continue
+
+        # Detect task header
+        m_task = task_header_re.match(line)
+        if m_task:
+            task_name = m_task.group('name')
+            current_section = task_name
+            task_dict: Dict[str, Any] = {'task_name': task_name}
+            result['tasks'].append(task_dict)
+            # Skip blank line
+            i += 1
+            # Skip table header and separator
+            i += 2
+            continue
+
+        # Parse table row
+        if current_section and line.startswith('|'):
+            parts = [col.strip() for col in line.strip().split('|')[1:-1]]
+            if len(parts) == 2:
+                key, val = parts
+                # Skip markdown table separator rows
+                if key == '---' and val == '---':
+                    i += 1
+                    continue
+                if current_section == 'crew':
+                    result['crew'][key] = val
+                else:
+                    result['tasks'][-1][key] = val
+        i += 1
+
+    # Assign session_id back into crew
+    if session_id:
+        result['crew']['crew_session_id'] = session_id
+
+    return result
+
+
+def test_conversion(original_data: Dict[str, Any]) -> None:
+    """
+    Test round-trip conversion: dict -> markdown -> dict, assert equality.
+    """
+    md = convert_to_markdown(original_data)
+    reconstructed = convert_markdown_to_dict(md)
+    print(md)
+    print("")
+    print(reconstructed)
+   #assert reconstructed == original_data, f"Round-trip conversion failed: {reconstructed} != {original_data}"
+    #print("Test passed: reconstructed data matches original.")
+
+
+
+md_format = convert_to_markdown(all_results_compiled_hr)
+print(md_format)
+
+def extend_markdown(existing_md, new_data):
+    # Extract the existing tables and save them as a list of lines for each table
+    tables = re.split(r'## Task:', existing_md)
+
+    # Build up a list of all unique key names from both existing and new data
+    all_keys = set()
+    for table in tables:
+        lines = table.strip().split('\n')
+        headers = lines[0].split('|')[1:-1]  # Exclude the first and last empty strings
+        all_keys.update(headers)
+    for new_session in new_data:
+        all_keys.update(new_session.keys())
+    all_keys = sorted(list(all_keys))  # Sort the keys for consistency
+    
+    new_session_id = None
+    # For each new benchmark session, format it into a markdown table and append it to the corresponding task table
+    for new_session in new_data:
+        if 'task_name' in new_session:  # For task data
+            task_name = new_session['task_name']
+            for i, table in enumerate(tables):
+                if f"Task: {task_name}" in table:
+                    # Add the new session data as a new column to the existing task table
+                    lines = table.strip().split('\n')
+                    print(new_session)
+                    header_line = lines[0] + " | " + new_session['crew_session_id']
+                    separator_line = lines[1].replace("|", "|---") + "|"
+                    data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in line.split(" | ") else "-" for j, line in enumerate(lines[2:])])}' + " | " + new_session.get(k, '-') for k in all_keys if k != 'task_name']
+                    tables[i] = '\n'.join([header_line, separator_line] + data_lines)
+                else:  # For new tasks, create a new table with all possible row names
+                    header_line = f"## Task: {task_name}\n\n| Metric | " + ' | '.join(all_keys) + " |\n"
+                    separator_line = '|---' * len(all_keys) + "|\n"
+                    data_lines = [f'| {k} | {" | ".join([new_session.get(key, "-") for key in all_keys if key != "task_name"])} |' for k in all_keys if k != 'crew_session_id']
+                    tables.append('\n'.join([header_line, separator_line] + data_lines))
+        else:  # For crew summary data
+            # Add the new session data as a new column to the existing crew summary table
+            lines = tables[0].strip().split('\n')
+            if new_session_id == None:
+                new_session_id = new_session['crew_session_id']
+            header_line = lines[2] + " | " + new_session['crew_session_id']
+            # data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in line.split(" | ") else "-" for j, line in enumerate(lines[3:])])}' + " | " + new_session.get(k, '-') for k in all_keys if k != 'crew_session_id']
+            data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in str(line.split(" | ")) else "-" for j, line in enumerate(lines[3:])])}' + " | " + str(new_session.get(k, '-')) for k in all_keys if k != 'crew_session_id']
+            tables[0] = '\n'.join(lines[:2] + [header_line] + data_lines)
+
+    # Combine the updated tables back into a single markdown string and return it
+    return '## Task:'.join(tables)
+
+
+filepath = "benchmark.md"
+if os.path.isfile(filepath):
+        print("File exists.")
+        with open(filepath, 'r') as f:
+            existing_md = f.read()
+            print(f"existingMD:\n{existing_md}")
+            print(f"myNewMD:\n{md_str}")
+        # updated_md = extend_markdown(existing_md, all_results_compiled)
+        # with open(filepath, 'w') as f:
+            # f.write(updated_md)
+     
+else:
+    md_str = dict_to_markdown(all_results_compiled)
+    print(md_str)
+    with open(filepath, 'w') as f:
+        f.write(md_str)
+
+
+
+
+
+
