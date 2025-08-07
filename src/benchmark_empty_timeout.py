@@ -23,7 +23,7 @@ do_only_call_summarize = True
 iterations = 3
 
 timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
-# timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -886,69 +886,111 @@ def test_conversion(original_data: Dict[str, Any]) -> None:
 md_format = convert_to_markdown(all_results_compiled_hr)
 print(md_format)
 
-def extend_markdown(existing_md, new_data):
-    # Extract the existing tables and save them as a list of lines for each table
-    tables = re.split(r'## Task:', existing_md)
+# #####################
 
-    # Build up a list of all unique key names from both existing and new data
-    all_keys = set()
-    for table in tables:
-        lines = table.strip().split('\n')
-        headers = lines[0].split('|')[1:-1]  # Exclude the first and last empty strings
-        all_keys.update(headers)
-    for new_session in new_data:
-        all_keys.update(new_session.keys())
-    all_keys = sorted(list(all_keys))  # Sort the keys for consistency
-    
-    new_session_id = None
-    # For each new benchmark session, format it into a markdown table and append it to the corresponding task table
-    for new_session in new_data:
-        if 'task_name' in new_session:  # For task data
-            task_name = new_session['task_name']
-            for i, table in enumerate(tables):
-                if f"Task: {task_name}" in table:
-                    # Add the new session data as a new column to the existing task table
-                    lines = table.strip().split('\n')
-                    print(new_session)
-                    header_line = lines[0] + " | " + new_session['crew_session_id']
-                    separator_line = lines[1].replace("|", "|---") + "|"
-                    data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in line.split(" | ") else "-" for j, line in enumerate(lines[2:])])}' + " | " + new_session.get(k, '-') for k in all_keys if k != 'task_name']
-                    tables[i] = '\n'.join([header_line, separator_line] + data_lines)
-                else:  # For new tasks, create a new table with all possible row names
-                    header_line = f"## Task: {task_name}\n\n| Metric | " + ' | '.join(all_keys) + " |\n"
-                    separator_line = '|---' * len(all_keys) + "|\n"
-                    data_lines = [f'| {k} | {" | ".join([new_session.get(key, "-") for key in all_keys if key != "task_name"])} |' for k in all_keys if k != 'crew_session_id']
-                    tables.append('\n'.join([header_line, separator_line] + data_lines))
-        else:  # For crew summary data
-            # Add the new session data as a new column to the existing crew summary table
-            lines = tables[0].strip().split('\n')
-            if new_session_id == None:
-                new_session_id = new_session['crew_session_id']
-            header_line = lines[2] + " | " + new_session['crew_session_id']
-            # data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in line.split(" | ") else "-" for j, line in enumerate(lines[3:])])}' + " | " + new_session.get(k, '-') for k in all_keys if k != 'crew_session_id']
-            data_lines = [f'| {k} | {" | ".join([str(line.split(" | ")[j+1]) if k in str(line.split(" | ")) else "-" for j, line in enumerate(lines[3:])])}' + " | " + str(new_session.get(k, '-')) for k in all_keys if k != 'crew_session_id']
-            tables[0] = '\n'.join(lines[:2] + [header_line] + data_lines)
-
-    # Combine the updated tables back into a single markdown string and return it
-    return '## Task:'.join(tables)
+# Read the markdown content from a file (assuming it's stored in 'data.md')
 
 
-filepath = "benchmark.md"
+with open('/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAI_reicht/src/mdMultiCol.md', 'r') as file:
+    markdown_content = file.read()
+
+import re, csv, io
+from typing import Dict, Any
+
+# ---------- 1️⃣  Helpers ----------------------------------------------------
+def _clean_row(row: str) -> list[str]:
+    """Strip leading/trailing `|`, split on `|` and strip whitespace."""
+    parts = [p.strip() for p in row.strip('|').split('|')]
+    return [p for p in parts if p != '']
+
+
+def _parse_table(tbl: str) -> Dict[str, Dict[str, Any]]:
+    """
+    Convert a Markdown table into {metric: {date: value}}
+    Example input (first 2 lines only):
+        | Metric | a | b |
+        |---|---|---|
+        | Iterations | 3 | 3 |
+    """
+    # Remove the separator line (---)
+    lines = [ln for ln in tbl.splitlines()
+             if not re.match(r'^\s*\|?-{3,}\|-?$', ln)]
+
+    # CSV‑like parsing (delimiter '|')
+    f = io.StringIO('\n'.join(lines))
+    rdr = csv.reader(f, delimiter='|')
+
+    rows = [list(map(str.strip, row)) for row in rdr if any(row)]
+    header, *data_rows = rows
+
+    # Header first cell is "Metric", rest are dates
+    dates = header[1:]
+
+    result: Dict[str, Dict[str, Any]] = {}
+    for row in data_rows:
+        metric = row[0]
+        values = row[1:]
+        result[metric] = dict(zip(dates, values))
+
+    return result
+
+
+# ---------- 2️⃣  Main parser ------------------------------------------------
+def parse_markdown(md_text: str) -> Dict[str, Any]:
+    """
+    Parse a Markdown document that contains only tables headed by ## ... .
+    Returns a dict of section → {metric: {date: value}}
+    """
+    sections: Dict[str, Any] = {}
+    current_section = None
+    table_lines: list[str] = []
+
+    for raw_line in md_text.splitlines():
+        line = raw_line.rstrip()
+
+        # 2.1 Detect a section heading
+        if line.startswith('##'):
+            # Flush previous section
+            if current_section and table_lines:
+                sections[current_section] = _parse_table('\n'.join(table_lines))
+            current_section = line[2:].strip()
+            table_lines = []
+            continue
+
+        # 2.2 Keep only lines that look like a table row
+        if '|' in line:
+            table_lines.append(line)
+
+    # 2.3 Flush the last section
+    if current_section and table_lines:
+        sections[current_section] = _parse_table('\n'.join(table_lines))
+
+    return sections
+
+# #####################
+
+# filepath = "benchmark.md"
+myDS = parse_markdown(markdown_content)
+print(myDS)
+exit()
+
 if os.path.isfile(filepath):
         print("File exists.")
         with open(filepath, 'r') as f:
             existing_md = f.read()
             print(f"existingMD:\n{existing_md}")
-            print(f"myNewMD:\n{md_str}")
-        # updated_md = extend_markdown(existing_md, all_results_compiled)
-        # with open(filepath, 'w') as f:
+            print(f"myNewMD:\n{md_format}")
+        updated_md = extend_markdown(existing_md, md_format)
+        print(f"UPDATED MD:\n{updated_md}")
+        #with open(filepath, 'w') as f:
             # f.write(updated_md)
      
 else:
-    md_str = dict_to_markdown(all_results_compiled)
-    print(md_str)
+    # md_str = dict_to_markdown(all_results_compiled)
+    # print(md_str)
     with open(filepath, 'w') as f:
-        f.write(md_str)
+        f.write(md_format)
+        print(f"written MD file: {filepath}")
 
 
 
