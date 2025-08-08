@@ -22,8 +22,9 @@ do_only_call_summarize = True
 # Define the number of iterations
 iterations = 3
 
-timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
+# timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
+# timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -131,7 +132,7 @@ def summarize_logfile(logfile_path):
                 bnchmrk_counter[term] += 1
 
     total_iterations = sum(bnchmrk_counter.values())
-    summary["crew_sum_bnchmrk_iterations"] = f"{total_iterations}"
+    summary["crew_sum_bnchmrk_iterations"] = {f"{timestamp}":f"{total_iterations}"}
 
     # Print the summary
     print("==== SUMMARY ====")
@@ -144,8 +145,8 @@ def summarize_logfile(logfile_path):
     for term, count in bnchmrk_counter.items():
         percentage = (count / total_iterations) * 100
         print(f"sum_{term} = {count} ({percentage:.0f}%)")
-        summary[f"crew_sum_{term}#"] = f"{count}"
-        summary[f"crew_sum_{term}%"] = f"{percentage:.0f}%"
+        summary[f"crew_sum_{term}#"] = {f"{timestamp}":f"{count}"}
+        summary[f"crew_sum_{term}%"] = {f"{timestamp}":f"{percentage:.0f}%"}
 
     # user_input = input(f"Write Summary to {logfile_path}?[(y)es]:")
     user_input = "y"
@@ -604,11 +605,11 @@ Sample of task_list_dicts
 task_list_dicts = get_benchmark_task_details()
 
 all_results_compiled = {}
-summary_crew_iterations["crew_session_id"] = f"{timestamp}"
-summary_crew_iterations["crew_duration"] = f"{formatted_duration}"
-summary_crew_iterations["crew_note"] = f"Symbol *: includes results from unstable model behaviour"
+# summary_crew_iterations["crew_session_id"] = f"{timestamp}"
+summary_crew_iterations["crew_duration"] = {f"{timestamp}":f"{formatted_duration}"}
+# summary_crew_iterations["crew_note"] = f"Symbol *: includes results from unstable model behaviour"
 all_results_compiled['crew']=summary_crew_iterations
-all_results_compiled['tasks']=[]
+# all_results_compiled['tasks']=[]
 for task_dict in task_list_dicts:
     all_task_results_compiled = {}
     # collected information:
@@ -623,9 +624,9 @@ for task_dict in task_list_dicts:
 
 
     
-    all_task_results_compiled["task_name"] = task_name
-    all_task_results_compiled["task_model_name"] = task_dict.get("TASK_MODEL_NAME", "na")
-    all_task_results_compiled["task_model_temp"] = task_dict.get("TASK_MODEL_TEMP", "na")
+    # all_task_results_compiled["task_name"] = task_name
+    all_task_results_compiled["task_model_name"] = {f"{timestamp}":task_dict.get("TASK_MODEL_NAME", "na")}
+    all_task_results_compiled["task_model_temp"] = {f"{timestamp}":task_dict.get("TASK_MODEL_TEMP", "na")}
 
 
     # process all answers of task
@@ -678,11 +679,11 @@ for task_dict in task_list_dicts:
     all_task_tool_usage_pass_stable = task_tool_usage_right_stable if task_tool_usage_right_stable != "na" else "-"
     all_task_tool_usage_fail_stable = task_tool_usage_wrong_stable if task_tool_usage_wrong_stable != "na" else "-"
 
-    all_task_results_compiled["task_tool_usage_calls"] = f"{all_task_tool_usage_calls_stable} (*:{all_task_tool_usage_calls})"
-    all_task_results_compiled["task_tool_usage_pass%"] = f"{all_task_tool_usage_pass_p_stable} (*:{all_task_tool_usage_pass_p})"
-    all_task_results_compiled["task_tool_usage_fail%"] = f"{all_task_tool_usage_fail_p_stable} (*:{all_task_tool_usage_fail_p})"
-    all_task_results_compiled["task_tool_usage_pass#"] = f"{all_task_tool_usage_pass_stable} (*:{all_task_tool_usage_pass})"
-    all_task_results_compiled["task_tool_usage_fail#"] = f"{all_task_tool_usage_fail_stable} (*:{all_task_tool_usage_fail})"
+    all_task_results_compiled["task_tool_usage_calls"] = {f"{timestamp}":f"{all_task_tool_usage_calls_stable} (*:{all_task_tool_usage_calls})"}
+    all_task_results_compiled["task_tool_usage_pass%"] = {f"{timestamp}":f"{all_task_tool_usage_pass_p_stable} (*:{all_task_tool_usage_pass_p})"}
+    all_task_results_compiled["task_tool_usage_fail%"] = {f"{timestamp}":f"{all_task_tool_usage_fail_p_stable} (*:{all_task_tool_usage_fail_p})"}
+    all_task_results_compiled["task_tool_usage_pass#"] = {f"{timestamp}":f"{all_task_tool_usage_pass_stable} (*:{all_task_tool_usage_pass})"}
+    all_task_results_compiled["task_tool_usage_fail#"] = {f"{timestamp}":f"{all_task_tool_usage_fail_stable} (*:{all_task_tool_usage_fail})"}
 
 
     # task_output
@@ -696,13 +697,13 @@ for task_dict in task_list_dicts:
     task_tool_output_mismatches = false_count if len(tool_taskoutput_results) != 0 else "-"
     task_tool_output_mismatches_p = f"{((task_tool_output_mismatches / len(tool_taskoutput_results))*100):.0f}%" if len(tool_taskoutput_results) != 0 else "-"
 
-    all_task_results_compiled["task_output_matching%"] = f"{task_tool_output_matches_stable_p} (*:{task_tool_output_matches_p})"
-    all_task_results_compiled["task_output_mismatch%"] = f"{task_tool_output_mismatches_stable_p} (*:{task_tool_output_mismatches_p})"
-    all_task_results_compiled["task_output_matching#"] = f"{task_tool_output_matches_stable} (*:{task_tool_output_matches})"
-    all_task_results_compiled["task_output_mismatch#"] = f"{task_tool_output_mismatches_stable} (*:{task_tool_output_mismatches})"
+    all_task_results_compiled["task_output_matching%"] = {f"{timestamp}":f"{task_tool_output_matches_stable_p} (*:{task_tool_output_matches_p})"}
+    all_task_results_compiled["task_output_mismatch%"] = {f"{timestamp}":f"{task_tool_output_mismatches_stable_p} (*:{task_tool_output_mismatches_p})"}
+    all_task_results_compiled["task_output_matching#"] = {f"{timestamp}":f"{task_tool_output_matches_stable} (*:{task_tool_output_matches})"}
+    all_task_results_compiled["task_output_mismatch#"] = {f"{timestamp}":f"{task_tool_output_mismatches_stable} (*:{task_tool_output_mismatches})"}
 
 
-    all_results_compiled['tasks'].append(all_task_results_compiled)
+    all_results_compiled[task_name]=all_task_results_compiled
 
 
 
@@ -754,243 +755,188 @@ def format_dict_humanreadable(data:dict) -> dict:
 
 all_results_compiled_hr = format_dict_humanreadable(all_results_compiled)
 
-print("\nALL_RESULTS_COMPILED HR\n")
+# print("\nALL_RESULTS_COMPILED HR\n")
 
-for k, v in all_results_compiled_hr.items():
-    print(f"{k}: {v}")
-    print("")
-print("")
+# for k, v in all_results_compiled_hr.items():
+#     print(f"{k}: {v}")
+#     print("")
+# print("")
 
-print(f"datastructure:\n{all_results_compiled_hr}")
-
-
-from typing import Dict, Any
+# print(f"datastructure:\n{all_results_compiled_hr}")
 
 
-def convert_to_markdown(data: Dict[str, Any]) -> str:
+
+
+##########
+
+def escape(s):
+    """Escape special characters in strings for markdown representation."""
+    return str(s).replace('|', '\\|').replace('\n', '\\n')
+
+def unescape(s):
+    """Unescape special characters in strings parsed from markdown."""
+    return s.replace('\\|', '|').replace('\\n', '\n')
+
+def dict_to_md(data):
     """
-    Convert nested dictionary with crew info and tasks list to markdown string.
-    The crew table uses the crew_session_id as the header name for values.
-    Each task table is named by its task_name and includes crew_session_id column.
+    Convert a nested dictionary to markdown format.
+
+    Args:
+        data: A nested dictionary with the structure as described.
+
+    Returns:
+        str: A markdown-formatted string representing the dictionary.
     """
-    crew = data.get('crew', {})
-    session_id = crew.get('crew_session_id', 'session')
+    
+	# Sort top-level keys with 'crew' first
+    # Extract top-level keys
+	
+    top_keys = list(data.keys())
+	
+	# Define the key to appear first in the sorted order
+    key_to_prioritize = "crew"
+
+	# Sort the keys, ensuring 'crew' comes first
+    sorted_keys = sorted(top_keys, key=lambda x: (x != key_to_prioritize))
+
+	# Reconstruct the dictionary in the desired order
+    sorted_dict = {key: data[key] for key in sorted_keys}
+    
     md_lines = []
+    for top_key, top_value in sorted_dict.items():
+        if top_key == 'crew':
+            md_lines.append(f"## {top_key}")
+        else:
+            md_lines.append(f"## Task: {top_key}")
 
-    # Crew section
-    md_lines.append("## Crew")
-    md_lines.append("")  # blank line
-    md_lines.append(f"| Metric | {session_id} |")
-    md_lines.append("|---|---|")
-    # Include all crew fields in insertion order
-    for key, value in crew.items():
-        md_lines.append(f"| {key} | {value} |")
-    md_lines.append("")  # blank line
-
-    # Task sections
-    for task in data.get('tasks', []):
-        name = task.get('task_name', 'task')
-        md_lines.append(f"## Task: {name}")
-        md_lines.append("")  # blank line
-        md_lines.append(f"| Metric | {session_id} |")
-        md_lines.append("|---|---|")
-        for key, value in task.items():
-            if key == 'task_name':
-                continue
-            md_lines.append(f"| {key} | {value} |")
-        md_lines.append("")  # blank line
-
-    return "\n".join(md_lines)
-
-
-def convert_markdown_to_dict(markdown_str: str) -> Dict[str, Any]:
+        # Collect all timestamps for the section
+        all_timestamps = set()
+        for metric in top_value.values():
+            all_timestamps.update(metric.keys())
+        
+        # Convert set to sorted list for consistent order
+        all_timestamps = sorted(all_timestamps)
+        
+        # Print the header row for each section only once
+        md_lines.append("| Metric | " + ' | '.join(all_timestamps) + " |")
+        md_lines.append("|---" + "|---" * len(all_timestamps) + "|")
+        
+        # Now process each metric within this section, ensuring headers are not repeated
+        for metric, timestamps in top_value.items():
+            md_lines.append(f"| {metric} | " + ' | '.join(escape(timestamps.get(ts, '')) for ts in all_timestamps) + " |")
+    
+    return '\n'.join(md_lines)
+def md_to_dict(md_text):
     """
-    Parse markdown string produced by convert_to_markdown back into original data structure.
-    Skips the markdown separator rows ('---').
+    Convert markdown-formatted string back to the original nested dictionary.
+
+    Args:
+        md_text: A string in markdown format as produced by dict_to_md.
+
+    Returns:
+        dict: The reconstructed nested dictionary.
     """
-    result: Dict[str, Any] = {'crew': {}, 'tasks': []}
-    lines = markdown_str.splitlines()
-    current_section = None
-    session_id = None
+    result = {}
+    current_top_key = None
+    headers = []
+    timestamps = []
 
-    crew_header_re = re.compile(r'^## Crew\s*$')
-    task_header_re = re.compile(r'^## Task:\s*(?P<name>.+)$')
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-
-        # Detect crew header
-        if crew_header_re.match(line):
-            current_section = 'crew'
-            # Skip blank line
-            i += 1
-            # Next line is table header
-            header_line = lines[i]
-            parts = [col.strip() for col in header_line.strip().split('|')[1:-1]]
-            # ['Metric', session_id]
-            if len(parts) == 2:
-                session_id = parts[1]
-            # Skip header and separator lines
-            i += 2
+    for line in md_text.split('\n'):
+        line = line.strip()
+        if not line:
             continue
+        elif line.startswith('## Task: '):
+            current_top_key = line[len('## Task: '):].strip()
+            result[current_top_key] = {}
+        elif line.startswith('## crew'):
+            current_top_key = line[len('## crew'):].strip()
+            result[current_top_key] = {}
+        elif line.startswith('| Metric |'):
+            headers = [header.strip() for header in line.split('|')[1:-1]]
+            headers.remove('Metric')
 
-        # Detect task header
-        m_task = task_header_re.match(line)
-        if m_task:
-            task_name = m_task.group('name')
-            current_section = task_name
-            task_dict: Dict[str, Any] = {'task_name': task_name}
-            result['tasks'].append(task_dict)
-            # Skip blank line
-            i += 1
-            # Skip table header and separator
-            i += 2
+        elif '---' in line:
             continue
-
-        # Parse table row
-        if current_section and line.startswith('|'):
-            parts = [col.strip() for col in line.strip().split('|')[1:-1]]
-            if len(parts) == 2:
-                key, val = parts
-                # Skip markdown table separator rows
-                if key == '---' and val == '---':
-                    i += 1
-                    continue
-                if current_section == 'crew':
-                    result['crew'][key] = val
-                else:
-                    result['tasks'][-1][key] = val
-        i += 1
-
-    # Assign session_id back into crew
-    if session_id:
-        result['crew']['crew_session_id'] = session_id
-
+        else:
+            if current_top_key and headers:
+                metric, *values = [unescape(value.strip()) for value in line.split('|')[1:-1]]
+                if metric and values:
+                    result[current_top_key][metric] = dict(zip(headers, values))
     return result
 
 
-def test_conversion(original_data: Dict[str, Any]) -> None:
-    """
-    Test round-trip conversion: dict -> markdown -> dict, assert equality.
-    """
-    md = convert_to_markdown(original_data)
-    reconstructed = convert_markdown_to_dict(md)
-    print(md)
-    print("")
-    print(reconstructed)
-   #assert reconstructed == original_data, f"Round-trip conversion failed: {reconstructed} != {original_data}"
-    #print("Test passed: reconstructed data matches original.")
+def merge_dicts(dict1, dict2):
+    merged = {}
+    categories = set(dict1.keys()).union(set(dict2.keys()))
+
+    for category in categories:
+        metrics_old = set(dict1[category].keys()) if category in dict1 else set()
+        metrics_new = set(dict2[category].keys()) if category in dict2 else set()
+        all_metrics = metrics_old.union(metrics_new)
+
+        timestamps_old = set()
+        if category in dict1:
+            for metric_data in dict1[category].values():
+                timestamps_old.update(metric_data.keys())
+        timestamps_new = set()
+        if category in dict2:
+            for metric_data in dict2[category].values():
+                timestamps_new.update(metric_data.keys())
+        all_timestamps = sorted(timestamps_old.union(timestamps_new))
+
+        merged_category = {}
+        for metric in all_metrics:
+            metric_data = {timestamp: "_" for timestamp in all_timestamps}
+
+            if category in dict1 and metric in dict1[category]:
+                for timestamp, value in dict1[category][metric].items():
+                    metric_data[timestamp] = value
+            if category in dict2 and metric in dict2[category]:
+                for timestamp, value in dict2[category][metric].items():
+                    metric_data[timestamp] = value
+
+            merged_category[metric] = metric_data
+        merged[category] = merged_category
+    return merged
+
+def md_sanityCheck(filepath, expected_md):
+    with open(filepath, 'r') as f:
+        existing_md_sanityCheck = f.read()
+    
+    if existing_md_sanityCheck != expected_md:
+        print(f"\nWARNING from MARKDOWN SANITY CHECK:\n...Markdown of written file and in-memory markdown not fully matching, please check manually:")
+        print(f"   Markdown from file {filepath}:\n{existing_md_sanityCheck}")
+        print(f"   Markdown from in-memory:\n{expected_md}")
+        print(f"MARKDOWN SANITY CHECK END\n\n")
+    else:
+        print("MARKDOWN INFO: [matching] Written output and expected output")
 
 
 
-md_format = convert_to_markdown(all_results_compiled_hr)
-print(md_format)
-
-# #####################
-
-# Read the markdown content from a file (assuming it's stored in 'data.md')
-
-
-with open('/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAI_reicht/src/mdMultiCol.md', 'r') as file:
-    markdown_content = file.read()
-
-import re, csv, io
-from typing import Dict, Any
-
-# ---------- 1️⃣  Helpers ----------------------------------------------------
-def _clean_row(row: str) -> list[str]:
-    """Strip leading/trailing `|`, split on `|` and strip whitespace."""
-    parts = [p.strip() for p in row.strip('|').split('|')]
-    return [p for p in parts if p != '']
-
-
-def _parse_table(tbl: str) -> Dict[str, Dict[str, Any]]:
-    """
-    Convert a Markdown table into {metric: {date: value}}
-    Example input (first 2 lines only):
-        | Metric | a | b |
-        |---|---|---|
-        | Iterations | 3 | 3 |
-    """
-    # Remove the separator line (---)
-    lines = [ln for ln in tbl.splitlines()
-             if not re.match(r'^\s*\|?-{3,}\|-?$', ln)]
-
-    # CSV‑like parsing (delimiter '|')
-    f = io.StringIO('\n'.join(lines))
-    rdr = csv.reader(f, delimiter='|')
-
-    rows = [list(map(str.strip, row)) for row in rdr if any(row)]
-    header, *data_rows = rows
-
-    # Header first cell is "Metric", rest are dates
-    dates = header[1:]
-
-    result: Dict[str, Dict[str, Any]] = {}
-    for row in data_rows:
-        metric = row[0]
-        values = row[1:]
-        result[metric] = dict(zip(dates, values))
-
-    return result
-
-
-# ---------- 2️⃣  Main parser ------------------------------------------------
-def parse_markdown(md_text: str) -> Dict[str, Any]:
-    """
-    Parse a Markdown document that contains only tables headed by ## ... .
-    Returns a dict of section → {metric: {date: value}}
-    """
-    sections: Dict[str, Any] = {}
-    current_section = None
-    table_lines: list[str] = []
-
-    for raw_line in md_text.splitlines():
-        line = raw_line.rstrip()
-
-        # 2.1 Detect a section heading
-        if line.startswith('##'):
-            # Flush previous section
-            if current_section and table_lines:
-                sections[current_section] = _parse_table('\n'.join(table_lines))
-            current_section = line[2:].strip()
-            table_lines = []
-            continue
-
-        # 2.2 Keep only lines that look like a table row
-        if '|' in line:
-            table_lines.append(line)
-
-    # 2.3 Flush the last section
-    if current_section and table_lines:
-        sections[current_section] = _parse_table('\n'.join(table_lines))
-
-    return sections
-
-# #####################
-
-# filepath = "benchmark.md"
-myDS = parse_markdown(markdown_content)
-print(myDS)
-exit()
+filepath=os.path.join(os.path.expanduser('~'), 'Nextcloud','public','LLM_benchmark','Benchmark_Overview.md' )
 
 if os.path.isfile(filepath):
-        print("File exists.")
         with open(filepath, 'r') as f:
             existing_md = f.read()
-            print(f"existingMD:\n{existing_md}")
-            print(f"myNewMD:\n{md_format}")
-        updated_md = extend_markdown(existing_md, md_format)
-        print(f"UPDATED MD:\n{updated_md}")
-        #with open(filepath, 'w') as f:
-            # f.write(updated_md)
-     
+            reconstructed_dict = md_to_dict(existing_md)
+
+        updated_dict = merge_dicts(reconstructed_dict, all_results_compiled_hr)
+        new_md = dict_to_md(updated_dict)
+        with open(filepath, 'w') as f:
+            f.write(new_md)
+            print(f"updated MD file: {filepath}")
+        #sanity check
+        md_sanityCheck(filepath=filepath,expected_md=new_md)
+        
+
+
 else:
-    # md_str = dict_to_markdown(all_results_compiled)
-    # print(md_str)
+    markdown_output = dict_to_md(all_results_compiled_hr)
     with open(filepath, 'w') as f:
-        f.write(md_format)
+        f.write(markdown_output)
         print(f"written MD file: {filepath}")
+    #sanity check
+    md_sanityCheck(filepath=filepath,expected_md=markdown_output)
 
 
 
