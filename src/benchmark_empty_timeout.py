@@ -16,6 +16,14 @@ import filecmp
 
 ### START THIS SCRIPT in PARENT DIR of src/...
 
+benchmark_compiled_results_filepath=os.path.join(os.path.expanduser('~'), 'Nextcloud','public','LLM_benchmark','Benchmark_Overview.md' )
+# Get the absolute path of the current file
+current_file_path = os.path.abspath(__file__)
+# Extract the directory name from the file path
+current_dir_path = os.path.dirname(current_file_path)
+
+# ToDo CONFIG: setup working dir and adjust paths accordingly
+working_dir = current_dir_path
 
 do_only_call_summarize = True
 
@@ -23,8 +31,8 @@ do_only_call_summarize = True
 iterations = 3
 
 timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
-# timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
-# timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -33,14 +41,7 @@ print(f"Timestamp Start-Session_ID: {timestamp}")
 set_benchmark_session_id_mod(f"{timestamp}")
 
 
-# Get the absolute path of the current file
-current_file_path = os.path.abspath(__file__)
 
-# Extract the directory name from the file path
-current_dir_path = os.path.dirname(current_file_path)
-
-# ToDo CONFIG: setup working dir and adjust paths accordingly
-working_dir = current_dir_path
 
 
 benchmark_results_dir = os.path.join(working_dir,"benchmark_results")
@@ -71,7 +72,8 @@ for i in range(iterations):
         # Run the Python script
         write_log(f"{logfile_path}",f"Iteration Status: {it_log_cnt} / {iterations}")
         set_benchmark_crew_iteration(f"{it_log_cnt}")
-        result = subprocess.run(['python', 'src/main.py'], check=True, capture_output=True)
+        main_exec_file = os.path.join(current_dir_path,'main.py')
+        result = subprocess.run(['python', main_exec_file], check=True, capture_output=True)
         
         # End time for each iteration
         end_time = datetime.datetime.now()
@@ -246,8 +248,6 @@ def summarize_tool_usage(file_path):
     # Return the counts for further processing if needed
     return tool_counts, input_counts, total_tool_count, total_input_count
 
-
-
 # Logfile specific function
 def parse_tool_use_log_file(file_path):
     """
@@ -270,7 +270,6 @@ def parse_tool_use_log_file(file_path):
         result.append((tool.strip(),input))
         
     return result
-
 
 # This function is specific to the ToolUsage Outputformat of the logfiles
 def crosscheck_tool_use_benchmark(expected_file="expected_output_benchmark_A.txt",
@@ -378,10 +377,6 @@ results:
 def tool_usage_details(benchmark_logs_dir, session_id, process_finished_calls_only=True, task_name=""):
     task_logfiles = list_finished_crew_files(benchmark_logs_dir, session_id, process_finished_calls_only=process_finished_calls_only, task_name=task_name)
     
-    #ToDo Task Result .md files and info. do someting with task_result_info and expected files, diff between
-    # action log files and .md expected files
-    task_result_info
-    
     # print(f"list of toolfiles of finished crew runs: {tool_files_finished}")
     results = []
     for task_log in task_logfiles:
@@ -408,7 +403,7 @@ def task_result_details(task_result_info, session_id=timestamp,process_finished_
     filtered_elements = [entry for entry in task_result_info if entry["timestamp"] == session_id]
 
     for task_element in filtered_elements:
-        task_sessionid = task_element.get("timestamp")
+        task_sessionid = task_element.get("timestamp") #just get the sessionid so we don't forget it is there
         iteration = task_element.get("iteration")
         filename = task_element.get("filepath")
         if process_finished_calls_only:
@@ -429,7 +424,6 @@ def task_result_details(task_result_info, session_id=timestamp,process_finished_
 
     return results
 
-summary_crew_iterations = summarize_logfile(f"{logfile_path}")
 
 def merge_results(results_list):
     # Initialize the merged dictionary with empty dictionaries for each key.
@@ -551,6 +545,8 @@ def scan_directory_for_task_files(directory):
 
     return task_benchmark_results
 
+summary_crew_iterations = summarize_logfile(f"{logfile_path}")
+
 # get the task results of .md files
 '''
 Sample structure of task_results
@@ -578,7 +574,6 @@ Sample structure of task_results
 '''
 
 task_result_directory_path = os.path.join(get_benchmark_base_path(),'task_result_outputDir')
-# print(task_result_directory_path)
 '''
 Sample of task_results:
 timestamp equals sessionID
@@ -805,7 +800,7 @@ def dict_to_md(data):
     md_lines = []
     for top_key, top_value in sorted_dict.items():
         if top_key == 'crew':
-            md_lines.append(f"## {top_key}")
+            md_lines.append(f"## Crew: {top_key}")
         else:
             md_lines.append(f"## Task: {top_key}")
 
@@ -826,6 +821,7 @@ def dict_to_md(data):
             md_lines.append(f"| {metric} | " + ' | '.join(escape(timestamps.get(ts, '')) for ts in all_timestamps) + " |")
     
     return '\n'.join(md_lines)
+
 def md_to_dict(md_text):
     """
     Convert markdown-formatted string back to the original nested dictionary.
@@ -848,8 +844,8 @@ def md_to_dict(md_text):
         elif line.startswith('## Task: '):
             current_top_key = line[len('## Task: '):].strip()
             result[current_top_key] = {}
-        elif line.startswith('## crew'):
-            current_top_key = line[len('## crew'):].strip()
+        elif line.startswith('## Crew: '):
+            current_top_key = line[len('## Crew: '):].strip()
             result[current_top_key] = {}
         elif line.startswith('| Metric |'):
             headers = [header.strip() for header in line.split('|')[1:-1]]
@@ -913,30 +909,30 @@ def md_sanityCheck(filepath, expected_md):
 
 
 
-filepath=os.path.join(os.path.expanduser('~'), 'Nextcloud','public','LLM_benchmark','Benchmark_Overview.md' )
 
-if os.path.isfile(filepath):
-        with open(filepath, 'r') as f:
+
+if os.path.isfile(benchmark_compiled_results_filepath):
+        with open(benchmark_compiled_results_filepath, 'r') as f:
             existing_md = f.read()
             reconstructed_dict = md_to_dict(existing_md)
 
         updated_dict = merge_dicts(reconstructed_dict, all_results_compiled_hr)
         new_md = dict_to_md(updated_dict)
-        with open(filepath, 'w') as f:
+        with open(benchmark_compiled_results_filepath, 'w') as f:
             f.write(new_md)
-            print(f"updated MD file: {filepath}")
+            print(f"updated MD file: {benchmark_compiled_results_filepath}")
         #sanity check
-        md_sanityCheck(filepath=filepath,expected_md=new_md)
+        md_sanityCheck(filepath=benchmark_compiled_results_filepath,expected_md=new_md)
         
 
 
 else:
     markdown_output = dict_to_md(all_results_compiled_hr)
-    with open(filepath, 'w') as f:
+    with open(benchmark_compiled_results_filepath, 'w') as f:
         f.write(markdown_output)
-        print(f"written MD file: {filepath}")
+        print(f"written MD file: {benchmark_compiled_results_filepath}")
     #sanity check
-    md_sanityCheck(filepath=filepath,expected_md=markdown_output)
+    md_sanityCheck(filepath=benchmark_compiled_results_filepath,expected_md=markdown_output)
 
 
 
