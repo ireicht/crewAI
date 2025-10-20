@@ -36,6 +36,12 @@ def set_benchmark_session_id_mod(value):
     config['BENCHMARK_SESSION_ID_MOD'] = value
     save_config('benchmark_tmp.json', config)
 
+# Get info if this is a benchmark run or called from src/main.py
+def is_BenchmarkRun() -> bool:
+    result = get_benchmark_session_id_mod()
+    # check if its not None before calling strip()
+    return bool(result and result.strip())
+
 # Getter and Setter for BENCHMARK_BASE_PATH
 def get_benchmark_base_path():
     config = load_config('benchmark_tmp.json')
