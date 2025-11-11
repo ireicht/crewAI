@@ -1,14 +1,10 @@
 {
-    "BENCHMARK_SESSION_ID_MOD": "''",
+    "BENCHMARK_SESSION_ID_MOD": "26-10-2025_18-01-26",
     "BENCHMARK_BASE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results",
-    "BENCHMARK_LOG_FILE_PATH": "''",
-    "crew_iteration": "3",
+    "BENCHMARK_LOG_FILE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/logs/benchmark_26-10-2025_18-01-26.log",
+    "crew_iteration": "2",
     "task_details": [
-        "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-3.2-8b-instruct TASK_MODEL_TEMP:0.0",
-        "TASK_NAME:web_searching TASK_MODEL_NAME:openai/meta-llama-3.1-8b-instruct TASK_MODEL_TEMP:0.0"
-    ],
-    "finished_crew_iteration": [
-        1,
-        2
+        "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-4.0-h-tiny-mlx TASK_MODEL_TEMP:0.0 TASK_MODEL_SEED:42, TASK_MODEL_FREQ_PENALTY:2.0 TASK_MODEL_TOP_K:None",
+        "TASK_NAME:web_searching TASK_MODEL_NAME:openai/meta-llama-3.1-8b-instruct TASK_MODEL_TEMP:0.0 TASK_MODEL_SEED:42, TASK_MODEL_FREQ_PENALTY:None TASK_MODEL_TOP_K:None"
     ]
 }
