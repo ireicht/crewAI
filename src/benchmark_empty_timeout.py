@@ -33,6 +33,7 @@ iterations = 10
 timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "10-01-2026_20-21-18" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -704,10 +705,12 @@ for task_dict in task_list_dicts:
 
 metric_lut = {}
 metric_lut["crew_sum_bnchmrk_iterations"] =             "Iterations"
-metric_lut["crew_sum_bnchmrk_successfully_finished#"] = "Success(#)"
-metric_lut["crew_sum_bnchmrk_successfully_finished%"] = "Success(%)"
-metric_lut["crew_sum_bnchmrk_llm_empty_response#"] =    "Fail (empty llm response #)"
-metric_lut["crew_sum_bnchmrk_llm_empty_response%"] =    "Fail (empty llm response %)"
+metric_lut["crew_sum_bnchmrk_successfully_finished#"] = "Crew Stability(#)"
+metric_lut["crew_sum_bnchmrk_successfully_finished%"] = "Crew Stability(%)"
+metric_lut["crew_sum_bnchmrk_llm_empty_response#"] =    "Crew Fail (empty llm response #)"
+metric_lut["crew_sum_bnchmrk_llm_empty_response%"] =    "Crew Fail (empty llm response %)"
+metric_lut["crew_sum_bnchmrk_timeout_reached#"] =    "Crew Fail (timeout llm response #)"
+metric_lut["crew_sum_bnchmrk_timeout_reached%"] =    "Crew Fail (timeout llm response %)"
 metric_lut["crew_duration"] =                           "Duration"
 
 metric_lut["task_model_name"] =         "Model Name"
