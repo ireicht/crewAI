@@ -6,7 +6,7 @@ from datetime import datetime
 
 from mycrew import Mytestcrewa1
 from mysearchcrew import MySearchCrew
-from igi_helper import write_log, get_benchmark_log_file_path
+from igi_helper import write_log, get_benchmark_log_file_path, is_BenchmarkRun
 
 ### disable crewai telemetry!
 import os
@@ -34,12 +34,13 @@ def run():
     BENCHMARK_LOG_FILE_path = get_benchmark_log_file_path()
     try:
         # Mytestcrewa1().crew().kickoff(inputs=inputs)
-        write_log(BENCHMARK_LOG_FILE_path, f"starting_crew:")
+        
+        write_log(BENCHMARK_LOG_FILE_path, f"starting_crew:") if is_BenchmarkRun() else None
         MySearchCrew().crew().kickoff(inputs=inputs)
-        write_log(BENCHMARK_LOG_FILE_path,f"bnchmrk_successfully_finished:")
+        write_log(BENCHMARK_LOG_FILE_path,f"bnchmrk_successfully_finished:") if is_BenchmarkRun() else None
 
     except Exception as e:
-        write_log(BENCHMARK_LOG_FILE_path,f"bnchmrk_other_exception_occured: {e}")
+        write_log(BENCHMARK_LOG_FILE_path,f"bnchmrk_other_exception_occured: {e}") if is_BenchmarkRun() else None
         raise Exception(f"An error occurred while running the crew: {e}")
     
 

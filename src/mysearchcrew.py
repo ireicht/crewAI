@@ -7,7 +7,7 @@ from duckduckgo_search import DDGS
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
-from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_logs_dir_path, set_benchmark_task_details
+from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_logs_dir_path, set_benchmark_task_details, is_BenchmarkRun
 from functools import partial
 
 from pydantic import Field, BaseModel as PydanticBaseModel
@@ -100,7 +100,7 @@ class MySearchCrew():
 				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_TASK_NAME_{taskName}_action_call_it_{benchmark_iteration_cnt}.log"
 				agent_action_log_file_path = os.path.join(get_benchmark_logs_dir_path(),agent_action_log_file)
 		
-				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}")
+				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}") if is_BenchmarkRun else None
 				# write_log(agent_action_log_file_path,f"\MyTaskName:{taskName} Agent-LLM:{myAgent.llm.model}")
 				
 		elif isinstance(output, AgentFinish):

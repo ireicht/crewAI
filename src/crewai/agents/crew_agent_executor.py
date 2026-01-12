@@ -29,7 +29,7 @@ from crewai.utilities.exceptions.context_window_exceeding_exception import (
 )
 from crewai.utilities.logger import Logger
 from crewai.utilities.training_handler import CrewTrainingHandler
-from igi_helper import print_structured, write_log, get_benchmark_log_file_path
+from igi_helper import print_structured, write_log, get_benchmark_log_file_path, is_BenchmarkRun
 import sys
 
 @dataclass
@@ -169,7 +169,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                     # Do not retry on litellm errors
                     if f"{e}".startswith("litellm.Timeout:"):
                         print(f"igi-litellmERROR. Timeout reached: {e}")
-                        write_log(get_benchmark_log_file_path(),f"bnchmrk_timeout_reached: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
+                        write_log(get_benchmark_log_file_path(),f"bnchmrk_timeout_reached: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")if is_BenchmarkRun() else None
                         # sys.exit(1) 
                         exit(1)
                         print(f"===> USER INPUT, check current status, maybe you want to increase the timeout? currently set to {self.llm.timeout} seconds.")
@@ -203,7 +203,7 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                         print(f"\n\n===> IDENTIFIED EMPTY RESPONSE: you can also think about some human input needed? ... anyhow continue waiting 10 seconds:\n\n")
                         print(f"think about modifiying the exported message stack and load it next time when calling the llm")
                         
-                        write_log(get_benchmark_log_file_path(),f"bnchmrk_llm_empty_response: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}")
+                        write_log(get_benchmark_log_file_path(),f"bnchmrk_llm_empty_response: MESSAGES_NUM:{len(self.messages)} LLM_Model:{self.llm.model} CREW_ID:{self.crew.id} MESSAGE_STACK:{self.messages}") if is_BenchmarkRun() else None
                         # sys.exit(2) 
                         exit(2)
                         try:

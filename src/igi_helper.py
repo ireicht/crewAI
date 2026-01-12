@@ -28,8 +28,12 @@ def save_config(file_path, config_dict):
 
 # Getter and Setter for BENCHMARK_SESSION_ID_MOD
 def get_benchmark_session_id_mod():
-    config = load_config('benchmark_tmp.json')
-    return config.get('BENCHMARK_SESSION_ID_MOD', '')
+    try:
+        config = load_config('benchmark_tmp.json')
+        return config.get('BENCHMARK_SESSION_ID_MOD', '')
+    except Exception as e:
+        print(f"Accessing file benchmark_tmp.json for Session_ID threw exception: {e}")
+        return ''
 
 def set_benchmark_session_id_mod(value):
     config = load_config('benchmark_tmp.json')
