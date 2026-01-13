@@ -6,7 +6,13 @@ import json
 import os
 
 
-
+STR_TITLE_LLM_RESPONSE_ERROR_TYPE = "LLM Response Error Type"
+STR_LLM_RESPONSE_ERROR_TYPE_EMPTY = "response empty"
+STR_LLM_RESPONSE_ERROR_TYPE_TIMEOUT = "response timeout"
+STR_TITLE_LLM_NAME = "Model Name"
+STR_TITLE_BENCHMARK_SESSION_ID = "Session ID"
+STR_TITLE_NUM_OF_MESSAGES = "Number of Messages"
+STR_TITLE_TASK_NAME = "Task Name"
 
 # Function to read JSON configuration file
 def load_config(file_path):
@@ -234,3 +240,43 @@ def format_duration(duration):
     minutes, seconds = divmod(remainder, 60)
     formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
     return formatted_duration
+
+
+def save_response_error_file(response_content):
+    responseErrorFileName = f"llm_resp_{get_benchmark_session_id_mod()}.json"
+    respErrFilePath = os.path.join(get_benchmark_logs_dir_path(), responseErrorFileName)
+    try:
+        with open(respErrFilePath, 'w') as respErrFile:
+            json.dump(response_content, respErrFile, indent=4)
+    except Exception as e:
+        msg = f"Error writing LLM Response Error Content to file {respErrFilePath}, error: {e}"
+        raise RuntimeError(msg)
+    
+
+def load_response_error_file(deleteFile: bool = True):
+    responseErrorFileName = f"llm_resp_{get_benchmark_session_id_mod()}.json"
+    respErrFilePath = os.path.join(
+        get_benchmark_logs_dir_path(),
+        responseErrorFileName
+    )
+
+    try:
+        with open(respErrFilePath, 'r') as respErrFile:
+            response_content = json.load(respErrFile)
+
+        # delete only after successful load
+        delete_error = None
+        if deleteFile:
+            try:
+                os.remove(respErrFilePath)
+            except Exception as e:
+                delete_error = e
+
+        return response_content, delete_error
+
+    except Exception as e:
+        msg = (
+            f"Error reading LLM Response Error Content from file "
+            f"{respErrFilePath}, error: {e}"
+        )
+        raise RuntimeError(msg)

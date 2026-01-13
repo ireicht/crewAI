@@ -8,7 +8,7 @@ make sure to adapt the variable current_file_path and its references to other pa
 
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path, load_response_error_file, print_structured
 from collections import Counter
 import re
 import os
@@ -101,10 +101,21 @@ for i in range(iterations):
         # when using sys.exit(#)
         if e.returncode == 0:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys). Duration {formatted_duration}")
+        
         elif e.returncode == 1:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to timeout. Duration {formatted_duration}")
+            llm_response_error, file_delete_error = load_response_error_file(deleteFile=True)
+            print_structured(llm_response_error)
+            if file_delete_error:
+                print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
+
         elif e.returncode == 2:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to empty response. Duration {formatted_duration}")
+            llm_response_error, file_delete_error = load_response_error_file(deleteFile=True)
+            print_structured(llm_response_error)
+            if file_delete_error:
+                print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
+
         else:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} duration {formatted_duration} failed with unknown (sys) error code {e.returncode}")
     
