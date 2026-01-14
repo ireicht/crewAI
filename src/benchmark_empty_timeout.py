@@ -724,9 +724,9 @@ metric_lut["crew_sum_bnchmrk_timeout_reached#"] =    "Crew Fail (timeout llm res
 metric_lut["crew_sum_bnchmrk_timeout_reached%"] =    "Crew Fail (timeout llm response %)"
 metric_lut["crew_duration"] =                           "Duration"
 
-metric_lut["task_model_name"] =         "Model Name"
-metric_lut["task_model_temp'"] =        "Model Temp."
-metric_lut["task_tool_usage_calls'"] =  "Tool calls"
+metric_lut["task_model_name"] =        "Model Name"
+metric_lut["task_model_temp"] =        "Model Temp"
+metric_lut["task_tool_usage_calls"] =  "Tool calls"
 
 
 
