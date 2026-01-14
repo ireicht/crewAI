@@ -119,7 +119,7 @@ class MySearchCrew():
 		#if agent finish or agent action or Toolresult
 	
 	def compile_task_model_details(self, myTask:Task) -> str:
-		model_details = f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature} TASK_MODEL_SEED:{myTask.agent.llm.seed}, TASK_MODEL_FREQ_PENALTY:{myTask.agent.llm.frequency_penalty} TASK_MODEL_TOP_K:{myTask.agent.llm.top_p}"
+		model_details = f"TASK_NAME:{myTask.name} TASK_MODEL_NAME:{myTask.agent.llm.model} TASK_MODEL_TEMP:{myTask.agent.llm.temperature} TASK_MODEL_SEED:{myTask.agent.llm.seed} TASK_MODEL_FREQ_PENALTY:{myTask.agent.llm.frequency_penalty} TASK_MODEL_TOP_K:{myTask.agent.llm.top_p}"
 		print(model_details)
 		return model_details
 
