@@ -25,7 +25,7 @@ current_dir_path = os.path.dirname(current_file_path)
 # ToDo CONFIG: setup working dir and adjust paths accordingly
 working_dir = current_dir_path
 
-do_only_call_summarize = False
+do_only_call_summarize = True
 
 # Define the number of iterations
 iterations = 10
@@ -33,7 +33,8 @@ iterations = 10
 timestamp = "04-08-2025_17-14-59" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
-timestamp = "10-01-2026_20-21-18" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "10-01-2026_20-07-54" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "10-01-2026_20-32-06" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
@@ -628,12 +629,16 @@ for task_dict in task_list_dicts:
     print(f"Task Name: {task_name}")
     task_result_info = task_results.get(task_name)
     # print(f"Task Results: \n{task_result_info}")
-
+    
+    # add all other parameter from the task_dict
+    for k, v in task_dict.items():
+        if k != "TASK_NAME":
+            all_task_results_compiled[str(k).lower()] = {f"{timestamp}":"na" if not v or v == "None" else str(v)}
 
     
     # all_task_results_compiled["task_name"] = task_name
-    all_task_results_compiled["task_model_name"] = {f"{timestamp}":task_dict.get("TASK_MODEL_NAME", "na")}
-    all_task_results_compiled["task_model_temp"] = {f"{timestamp}":task_dict.get("TASK_MODEL_TEMP", "na")}
+    #all_task_results_compiled["task_model_name"] = {f"{timestamp}":task_dict.get("TASK_MODEL_NAME", "na")}
+    #all_task_results_compiled["task_model_temp"] = {f"{timestamp}":task_dict.get("TASK_MODEL_TEMP", "na")}
 
 
     # process all answers of task
