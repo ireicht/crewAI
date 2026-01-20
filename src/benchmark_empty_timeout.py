@@ -25,7 +25,7 @@ current_dir_path = os.path.dirname(current_file_path)
 # ToDo CONFIG: setup working dir and adjust paths accordingly
 working_dir = current_dir_path
 
-do_only_call_summarize = True
+do_only_call_summarize = False
 
 # Define the number of iterations
 iterations = 10
