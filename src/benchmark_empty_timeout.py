@@ -5,16 +5,19 @@ Copyright: Ignaz Reicht (2025)
 NOTE: If you change the location of this file, 
 make sure to adapt the variable current_file_path and its references to other paths
 '''
+### START THIS SCRIPT in PARENT DIR of src/...
 
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path, load_response_error_file, print_structured
-from collections import Counter
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path, load_response_error_files, print_structured
+from collections import Counter, defaultdict
 import re
 import os
 import filecmp
+from typing import List, Dict, Any
+import statistics
 
-### START THIS SCRIPT in PARENT DIR of src/...
+
 
 benchmark_compiled_results_filepath=os.path.join(os.path.expanduser('~'), 'Nextcloud','public','LLM_benchmark','Benchmark_Overview.md' )
 # Get the absolute path of the current file
@@ -35,14 +38,13 @@ timestamp = "05-08-2025_14-27-46" #set for debugging purpose, is ignored when do
 timestamp = "08-08-2025_17-23-39" #set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "10-01-2026_20-07-54" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
 timestamp = "10-01-2026_20-32-06" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
+timestamp = "22-01-2026_08-11-34" # has timeout - set for debugging purpose, is ignored when do_only_call_summarize=False
 if not do_only_call_summarize:
     reset_benchmark_tmp_file()
     timestamp = datetime.datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
 print(f"Timestamp Start-Session_ID: {timestamp}")
 set_benchmark_session_id_mod(f"{timestamp}")
-
-
 
 
 
@@ -105,17 +107,17 @@ for i in range(iterations):
         
         elif e.returncode == 1:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to timeout. Duration {formatted_duration}")
-            llm_response_error, file_delete_error = load_response_error_file(deleteFile=True)
-            print_structured(llm_response_error)
-            if file_delete_error:
-                print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
+            # llm_response_error, file_delete_error = load_response_error_file()
+            # print_structured(llm_response_error)
+            # if file_delete_error:
+            #     print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
 
         elif e.returncode == 2:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} terminated (sys) due to empty response. Duration {formatted_duration}")
-            llm_response_error, file_delete_error = load_response_error_file(deleteFile=True)
-            print_structured(llm_response_error)
-            if file_delete_error:
-                print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
+            # llm_response_error, file_delete_error = load_response_error_file()
+            # print_structured(llm_response_error)
+            # if file_delete_error:
+            #     print(f"There is some issue deleting the file, do it manually: {file_delete_error}")
 
         else:
             write_log(f"{logfile_path}",f"Iteration {it_log_cnt} duration {formatted_duration} failed with unknown (sys) error code {e.returncode}")
@@ -125,9 +127,6 @@ duration = bench_end - bench_start
 formatted_duration = format_duration(duration)
 print(f"TOTAL Duration: {formatted_duration}")
 write_log(f"{logfile_path}",f"+++ TOTAL Duration (HH:MM:SS): {formatted_duration} ++++")
-
-set_benchmark_session_id_mod(f"''")
-set_benchmark_log_file_path(f"''")
 
 def summarize_logfile(logfile_path):
     summary = {}
@@ -618,6 +617,118 @@ summary_crew_iterations["crew_duration"] = {f"{timestamp}":f"{formatted_duration
 # summary_crew_iterations["crew_note"] = f"Symbol *: includes results from unstable model behaviour"
 all_results_compiled['crew']=summary_crew_iterations
 # all_results_compiled['tasks']=[]
+
+def analyze_llm_errors(data: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    """
+    Count LLM Response Error Types for each TASK_NAME and calculate mean/median 
+    of Number of Messages for each error type.
+    
+    Args:
+        data: List of dictionaries containing session data
+        
+    Returns:
+        Nested dictionary with task names as keys, error types as keys, and 
+        counts/mean/median information as values
+        
+    Example:
+        >>> result = analyze_llm_errors(data)
+        >>> print(result['web_searching']['response empty']['count'])
+        3
+        >>> print(result['web_searching']['response empty']['mean_messages'])
+        9.33
+    """
+    if not data:
+        return {}
+    
+    # Structure to hold error counts and message statistics
+    error_stats = defaultdict(lambda: defaultdict(lambda: {
+        'count': 0,
+        'message_values': []
+    }))
+    
+    for item in data:
+        task_name = item.get('Task Name')
+        error_type = item.get('LLM Response Error Type')
+        num_messages = item.get('Number of Messages')
+        
+        # Skip invalid entries
+        if not task_name or not error_type or num_messages is None:
+            continue
+            
+        # Increment count and collect message values
+        error_stats[task_name][error_type]['count'] += 1
+        error_stats[task_name][error_type]['message_values'].append(num_messages)
+    
+    # Calculate mean and median for each error type
+    result = {}
+    for task_name, errors in error_stats.items():
+        result[task_name] = {}
+        for error_type, stats in errors.items():
+            message_values = stats['message_values']
+            
+            # Convert string values to integers, handling conversion errors
+            int_message_values = []
+            has_conversion_error = False
+            
+            for val in message_values:
+                try:
+                    int_message_values.append(int(val))
+                except (ValueError, TypeError):
+                    # Flag conversion error - do not compute statistics if any invalid values
+                    has_conversion_error = True
+                    break
+            
+            # Calculate stats
+            mean_val = 0
+            median_val = 0
+            min_val = 0
+            max_val = 0
+      
+            if not has_conversion_error and int_message_values:
+                mean_val = round( (sum(int_message_values) / len(int_message_values) ), 2)
+                median_val = statistics.median_high(int_message_values)
+                min_val = min(int_message_values)
+                max_val = max(int_message_values)
+            
+            
+            # Store all information
+            result[task_name][error_type] = {
+                'count': stats['count'],
+                'mean_messages': f"{mean_val}" if not has_conversion_error and int_message_values else "-err",
+                'median_messages': f"{median_val}" if not has_conversion_error and int_message_values else "-err",
+                'min_messages': f"{min_val}" if not has_conversion_error and int_message_values else "-err",
+                'max_messages': f"{max_val}" if not has_conversion_error and int_message_values else "-err"
+            }
+    
+    return result
+
+
+response_contents, delete_errors, load_errors = load_response_error_files()
+task_stability = {}
+if len(delete_errors) > 0:
+    msg = f"Warning: cannot delete LLM response files: {delete_errors}"
+    write_log(f"{logfile_path}", msg)
+    print(msg)
+
+if len(load_errors) > 0:
+    msg = f"ERROR: LLM Stability score cannot be calculated or is compromised because cannot load LLM response error files: {load_errors}"
+    write_log(f"{logfile_path}", msg)
+    print(msg)
+elif len(response_contents) > 0:
+    # only if no load_error occured and the response_contents is available, then we have a valid data source to calculate the LLM Stability score
+    print('good job')
+    print(f"response_contents: {response_contents}")
+    task_stability = analyze_llm_errors(response_contents)
+    print(f"task_stability: {task_stability}")
+
+else:
+    write_log(f"{logfile_path}", f"FATAL: No LLM Stability score can be calculated")
+
+
+
+
+
+
 for task_dict in task_list_dicts:
     all_task_results_compiled = {}
     # collected information:
@@ -654,6 +765,35 @@ for task_dict in task_list_dicts:
     print(f"Task output matching: {true_count}")
     print(f"Task output mismatch: {false_count}")
 
+    # ToDo add the task_stability to the stats
+    task_llm_response_errors = task_stability.get(task_name, None)
+    if task_llm_response_errors:
+        print(f"\n \\\\\\\\\\\\\\\\\\ \n TASK STABILITY OUTPUT START: \n ")
+        # looks like: {'response empty': {'count': 3, 'mean_messages': '16.0', 'median_messages': '18', 'min_messages': '6', 'max_messages': '24'}
+        #            , 'response timeout': {'count': 1, 'mean_messages': '4.0', 'median_messages': '4', 'min_messages': '4', 'max_messages': '4'}}
+        llm_err_count = 0
+        for llm_err_type, err_stats in task_llm_response_errors.items():
+            for err_param, v in err_stats.items():
+                if err_param == "count":
+                    llm_err_count += int(v)
+        
+        # {f"{timestamp}":f"{total_iterations}"}
+        total_iterations_dict = summary_crew_iterations["crew_sum_bnchmrk_iterations"]
+        print(f"total_iterations_dict:{total_iterations_dict}")
+        total_iterations = 0
+        for ik, iv in total_iterations_dict.items():
+            total_iterations = int(iv)
+            
+        print(f"llm_err_count /  total_iterations * 100: {llm_err_count} /  {total_iterations} * 100")
+        llm_instability_score_p = llm_err_count /  total_iterations * 100
+        llm_stability_score_p = 100-llm_instability_score_p
+        all_task_results_compiled["LLM Stability"] = {f"{timestamp}":f"{llm_stability_score_p}%"}
+        print(f"{task_llm_response_errors}")
+        # all_task_results_compiled[""]
+        print(f"\n \\\\\\\\\\\\\\\\\\ \n TASK STABILITY OUTPUT END: \n ")
+    else:
+        print("no LLM ERRS :-) ")
+        all_task_results_compiled["LLM Stability"] = {f"{timestamp}":f"100%"}
 
     #process only answers from LLM stable behaviour 
     tool_results_logfiles_stable = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
@@ -958,3 +1098,6 @@ else:
 
 
 
+
+set_benchmark_session_id_mod(f"''")
+set_benchmark_log_file_path(f"''")

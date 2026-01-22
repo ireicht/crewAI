@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 import json
 import os
-
+import glob
 
 STR_TITLE_LLM_RESPONSE_ERROR_TYPE = "LLM Response Error Type"
 STR_LLM_RESPONSE_ERROR_TYPE_EMPTY = "response empty"
@@ -14,6 +14,7 @@ STR_TITLE_BENCHMARK_SESSION_ID = "Session ID"
 STR_TITLE_NUM_OF_MESSAGES = "Number of Messages"
 STR_TITLE_TASK_NAME = "Task Name"
 
+RESPONSE_ERR_INFO_PREFIX = "llm_resp_failinfo_"
 # Function to read JSON configuration file
 def load_config(file_path):
     try:
@@ -242,41 +243,98 @@ def format_duration(duration):
     return formatted_duration
 
 
+def get_unique_filename(base_filename, directory):
+    """Generate a unique filename by adding a counter if the file already exists."""
+    counter = 1
+    unique_filename = base_filename
+    filepath = os.path.join(directory, unique_filename)
+    
+    while os.path.exists(filepath):
+        name, ext = os.path.splitext(base_filename)
+        unique_filename = f"{name}_{counter}{ext}"
+        filepath = os.path.join(directory, unique_filename)
+        counter += 1
+    
+    return unique_filename
+"""
+This is how it looks like:
+{
+  Session ID: 13-01-2026_18-48-19
+  Model Name: openai/meta-llama-3.1-8b-instruct
+  LLM Response Error Type: response empty
+  Number of Messages: 15
+  TASK_NAME: web_searching
+}
+"""
 def save_response_error_file(response_content):
-    responseErrorFileName = f"llm_resp_{get_benchmark_session_id_mod()}.json"
-    respErrFilePath = os.path.join(get_benchmark_logs_dir_path(), responseErrorFileName)
+    responseErrorFileName = f"{RESPONSE_ERR_INFO_PREFIX}{get_benchmark_session_id_mod()}.json"
+    
+    logs_path = get_benchmark_logs_dir_path()
+    # Get unique filename if file already exists
+    unique_filename = get_unique_filename(responseErrorFileName, logs_path)
+    respErrFilePath = os.path.join(logs_path, unique_filename)
+    
     try:
         with open(respErrFilePath, 'w') as respErrFile:
             json.dump(response_content, respErrFile, indent=4)
     except Exception as e:
         msg = f"Error writing LLM Response Error Content to file {respErrFilePath}, error: {e}"
         raise RuntimeError(msg)
+    return respErrFilePath
     
 
-def load_response_error_file(deleteFile: bool = True):
-    responseErrorFileName = f"llm_resp_{get_benchmark_session_id_mod()}.json"
-    respErrFilePath = os.path.join(
-        get_benchmark_logs_dir_path(),
-        responseErrorFileName
-    )
+def load_response_error_files(deleteFile: bool = False):
+    """
+    Load LLM response error files from the benchmark logs directory.
+    
+    This function searches for files matching the pattern 
+    {RESPONSE_ERR_INFO_PREFIX}{get_benchmark_session_id_mod()}*.json
+    in the benchmark logs directory and loads their contents.
+    
+    Args:
+        deleteFile (bool, optional): If True, deletes successfully loaded files. 
+            Defaults to False.
+    
+    Returns:
+        tuple: A tuple containing three lists:
+            - response_contents (list): List of loaded JSON content from error files
+            - delete_errors (list): List of exceptions encountered during file deletion
+            - load_errors (list): List of error messages from failed file loading operations
+    
+    Example:
+        response_contents, delete_errors, load_errors = load_response_error_files(True)
+    """
 
-    try:
-        with open(respErrFilePath, 'r') as respErrFile:
-            response_content = json.load(respErrFile)
 
-        # delete only after successful load
-        delete_error = None
-        if deleteFile:
-            try:
-                os.remove(respErrFilePath)
-            except Exception as e:
-                delete_error = e
+    ts_session_id = get_benchmark_session_id_mod()
+    print(f"TS_SESSION_ID_MOD: {ts_session_id}")
+    pattern = os.path.join(get_benchmark_logs_dir_path(), f"{RESPONSE_ERR_INFO_PREFIX}{ts_session_id}*.json")
+    matching_files = glob.glob(pattern)
+    print(f'LOAD JSON FILES:pattern: {pattern}')
+    print(f'LOAD JSON FILES:MATCHING FILES: {matching_files}')
+    # Load content from all matching files
+    response_contents = []
+    delete_errors = []
+    load_errors = []
+    for respErrFilePath in matching_files:
+        try:
+            with open(respErrFilePath, 'r') as respErrFile:
+                response_content = json.load(respErrFile)
+                response_contents.append(response_content)
 
-        return response_content, delete_error
+            # delete only after successful load
+            if deleteFile:
+                try:
+                    os.remove(respErrFilePath)
+                except Exception as e:
+                    delete_errors.append(e)
 
-    except Exception as e:
-        msg = (
-            f"Error reading LLM Response Error Content from file "
-            f"{respErrFilePath}, error: {e}"
-        )
-        raise RuntimeError(msg)
+        #TODO deal with the structure!!
+        except Exception as e:
+            msg = (
+                f"Error reading LLM Response Error Content from file "
+                f"{respErrFilePath}, error: {e}"
+            )
+            load_errors.append(msg)
+            
+    return response_contents, delete_errors, load_errors

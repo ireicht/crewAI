@@ -178,9 +178,11 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                             STR_TITLE_TASK_NAME : f"{self.task.name}"
                         } # if needed, the message stack can also be added as a json entry
                         try:
-                            save_response_error_file(response_error_info)
+                            filepath_respfile = save_response_error_file(response_error_info)
+                            write_log(get_benchmark_log_file_path(), f"respone_failinfo_details_filepath:{filepath_respfile}")
                         except Exception as resp_e:
                             write_log(get_benchmark_log_file_path(), f"{resp_e}")
+                        
                         # sys.exit(1) 
                         exit(1)
                         print(f"===> USER INPUT, check current status, maybe you want to increase the timeout? currently set to {self.llm.timeout} seconds.")
@@ -223,7 +225,8 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
                             STR_TITLE_TASK_NAME : f"{self.task.name}"
                         } # if needed, the message stack can also be added as a json entry
                         try:
-                            save_response_error_file(response_error_info)
+                            filepath_respfile = save_response_error_file(response_error_info)
+                            write_log(get_benchmark_log_file_path(), f"response_failinfo_details_filepath:{filepath_respfile}")
                         except Exception as resp_e:
                             write_log(get_benchmark_log_file_path(), f"{resp_e}")
                         # sys.exit(2) 
