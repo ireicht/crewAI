@@ -28,7 +28,7 @@ current_dir_path = os.path.dirname(current_file_path)
 # ToDo CONFIG: setup working dir and adjust paths accordingly
 working_dir = current_dir_path
 
-do_only_call_summarize = False
+do_only_call_summarize = True
 
 # Define the number of iterations
 iterations = 10
@@ -771,11 +771,14 @@ for task_dict in task_list_dicts:
         print(f"\n \\\\\\\\\\\\\\\\\\ \n TASK STABILITY OUTPUT START: \n ")
         # looks like: {'response empty': {'count': 3, 'mean_messages': '16.0', 'median_messages': '18', 'min_messages': '6', 'max_messages': '24'}
         #            , 'response timeout': {'count': 1, 'mean_messages': '4.0', 'median_messages': '4', 'min_messages': '4', 'max_messages': '4'}}
-        llm_err_count = 0
+        task_sum_llm_err_count = 0
         for llm_err_type, err_stats in task_llm_response_errors.items():
             for err_param, v in err_stats.items():
+                all_task_results_compiled[f"LLM Instability {llm_err_type} {err_param}"] = {f"{timestamp}":f"{v}"}
+                # treat count separately for overall sum of all llm response error types
                 if err_param == "count":
-                    llm_err_count += int(v)
+                    task_sum_llm_err_count += int(v)
+                
         
         # {f"{timestamp}":f"{total_iterations}"}
         total_iterations_dict = summary_crew_iterations["crew_sum_bnchmrk_iterations"]
@@ -784,16 +787,17 @@ for task_dict in task_list_dicts:
         for ik, iv in total_iterations_dict.items():
             total_iterations = int(iv)
             
-        print(f"llm_err_count /  total_iterations * 100: {llm_err_count} /  {total_iterations} * 100")
-        llm_instability_score_p = llm_err_count /  total_iterations * 100
+        print(f"task_sum_llm_err_count /  total_iterations * 100: {task_sum_llm_err_count} /  {total_iterations} * 100")
+        llm_instability_score_p = task_sum_llm_err_count /  total_iterations * 100
         llm_stability_score_p = 100-llm_instability_score_p
-        all_task_results_compiled["LLM Stability"] = {f"{timestamp}":f"{llm_stability_score_p}%"}
+        all_task_results_compiled["LLM Response Stability"] = {f"{timestamp}":f"{llm_stability_score_p}%"}
+        
         print(f"{task_llm_response_errors}")
         # all_task_results_compiled[""]
         print(f"\n \\\\\\\\\\\\\\\\\\ \n TASK STABILITY OUTPUT END: \n ")
     else:
         print("no LLM ERRS :-) ")
-        all_task_results_compiled["LLM Stability"] = {f"{timestamp}":f"100%"}
+        all_task_results_compiled["LLM Response Stability"] = {f"{timestamp}":f"100%"}
 
     #process only answers from LLM stable behaviour 
     tool_results_logfiles_stable = tool_usage_details(benchmark_logs_dir_path, timestamp, process_finished_calls_only=True, task_name=task_name)
@@ -872,6 +876,17 @@ metric_lut["crew_duration"] =                           "Duration"
 metric_lut["task_model_name"] =        "Model Name"
 metric_lut["task_model_temp"] =        "Model Temp"
 metric_lut["task_tool_usage_calls"] =  "Tool calls"
+
+metric_lut["LLM Instability response timeout mean_messages"] =   "LLM Instab. timeout #msg mean"
+metric_lut["LLM Instability response timeout median_messages"] = "LLM Instab. timeout #msg median"
+metric_lut["LLM Instability response timeout max_messages"]    = "LLM Instab. timeout #msg max"
+metric_lut["LLM Instability response timeout min_messages"]    = "LLM Instab. timeout #msg min"
+metric_lut["LLM Instability response empty mean_messages"]   =   "LLM Instab. empty #msg mean"
+metric_lut["LLM Instability response empty median_messages"]   = "LLM Instab. empty #msg median"
+metric_lut["LLM Instability response empty max_messages"]      = "LLM Instab. empty #msg max"
+metric_lut["LLM Instability response empty min_messages"]      = "LLM Instab. empty #msg min"
+metric_lut["LLM Instability response timeout count"]           = "LLM Instab. empty count"
+metric_lut["LLM Instability response empty count"]             = "LLM Instab. empty count"
 
 
 
