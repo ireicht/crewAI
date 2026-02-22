@@ -17,6 +17,16 @@ STR_TITLE_TASK_INVOKE = "Invoking Task"
 STR_TITLE_TASK_DETAILS = "Task Details"
 
 RESPONSE_ERR_INFO_PREFIX = "llm_resp_failinfo_"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_BENCHMARK_TMP_PATH = REPO_ROOT / "benchmark_tmp.json"
+_benchmark_tmp_from_env = os.getenv("BENCHMARK_TMP_PATH")
+if _benchmark_tmp_from_env:
+    benchmark_tmp_path = Path(_benchmark_tmp_from_env).expanduser()
+    if not benchmark_tmp_path.is_absolute():
+        benchmark_tmp_path = (REPO_ROOT / benchmark_tmp_path).resolve()
+else:
+    benchmark_tmp_path = DEFAULT_BENCHMARK_TMP_PATH
+
 # Function to read JSON configuration file
 def load_config(file_path):
     try:
@@ -38,16 +48,16 @@ def save_config(file_path, config_dict):
 # Getter and Setter for BENCHMARK_SESSION_ID_MOD
 def get_benchmark_session_id_mod():
     try:
-        config = load_config('benchmark_tmp.json')
+        config = load_config(benchmark_tmp_path)
         return config.get('BENCHMARK_SESSION_ID_MOD', '')
     except Exception as e:
-        print(f"Accessing file benchmark_tmp.json for Session_ID threw exception: {e}")
+        print(f"Accessing file {benchmark_tmp_path} for Session_ID threw exception: {e}")
         return ''
 
 def set_benchmark_session_id_mod(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     config['BENCHMARK_SESSION_ID_MOD'] = value
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 # Get info if this is a benchmark run or called from src/main.py
 def is_BenchmarkRun() -> bool:
@@ -57,47 +67,47 @@ def is_BenchmarkRun() -> bool:
 
 # Getter and Setter for BENCHMARK_BASE_PATH
 def get_benchmark_base_path():
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     return config.get('BENCHMARK_BASE_PATH', '')
 
 def set_benchmark_base_path(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     config['BENCHMARK_BASE_PATH'] = value
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 def get_benchmark_logs_dir_path():
     return os.path.join(get_benchmark_base_path(),"logs")
 
 # Getter and Setter for BENCHMARK_LOG_FILE_PATH
 def get_benchmark_log_file_path():
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     return config.get('BENCHMARK_LOG_FILE_PATH', '')
 
 def set_benchmark_log_file_path(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     config['BENCHMARK_LOG_FILE_PATH'] = value
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 def reset_benchmark_tmp_file():
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     config = {}
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 # Getter and Setter for BENCHMARK_SESSION_ID_MOD
 def get_benchmark_crew_iteration():
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     return config.get('crew_iteration', '')
 
 def set_benchmark_task_details(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     current_task_details = config.get('task_details',[])
     if not (value in current_task_details):
         current_task_details.append(value)
         config['task_details'] = current_task_details
-        save_config('benchmark_tmp.json', config)    
+        save_config(benchmark_tmp_path, config)    
 
 def get_benchmark_task_details() -> list:
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     task_list = config.get('task_details',[])
     if len(task_list) <= 0:
         return []
@@ -110,20 +120,20 @@ def get_benchmark_task_details() -> list:
     
 
 def set_benchmark_crew_iteration(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     config['crew_iteration'] = value
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 
 def append_finished_crew_iteration(value):
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     current_finished_crew_iterations = config.get('finished_crew_iteration',[])
     current_finished_crew_iterations.append(value)
     config['finished_crew_iteration'] = current_finished_crew_iterations
-    save_config('benchmark_tmp.json', config)
+    save_config(benchmark_tmp_path, config)
 
 def get_finished_crew_iterations() -> list :
-    config = load_config('benchmark_tmp.json')
+    config = load_config(benchmark_tmp_path)
     return config.get('finished_crew_iteration',[])
      
 

@@ -7,6 +7,7 @@ from duckduckgo_search import DDGS
 from crewai.tools import BaseTool
 from datetime import datetime
 import os.path
+from pathlib import Path
 from igi_helper import sanitize_filename, get_benchmark_session_id_mod, get_benchmark_base_path, write_log, get_benchmark_crew_iteration, get_benchmark_logs_dir_path, set_benchmark_task_details, is_BenchmarkRun
 from functools import partial
 
@@ -75,11 +76,13 @@ class MySearchCrew():
 	# additional info for file name outputs
 	ts = datetime.now()
 
+	base_dir = Path(__file__).resolve().parent
+
 	# Learn more about YAML configuration files here:
 	# Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
 	# Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-	agents_config = 'config/agentsSearchCrew.yaml'
-	tasks_config = 'config/tasksSearchCrew.yaml'
+	agents_config = str(base_dir / 'config/agentsSearchCrew.yaml')
+	tasks_config = str(base_dir / 'config/tasksSearchCrew.yaml')
 
 
 	def my_researcher_stepCallback(self, output, myAgent=Agent):
