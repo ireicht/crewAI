@@ -9,13 +9,14 @@ make sure to adapt the variable current_file_path and its references to other pa
 
 import subprocess
 import datetime
-from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path, load_response_error_files, print_structured
+from igi_helper import write_log, get_variable_value, format_duration, set_benchmark_session_id_mod, set_benchmark_base_path, set_benchmark_log_file_path, set_benchmark_crew_iteration, append_finished_crew_iteration, reset_benchmark_tmp_file, get_finished_crew_iterations, get_benchmark_task_details, get_benchmark_logs_dir_path, get_benchmark_base_path, load_response_error_files, print_structured, STR_TITLE_TASK_INVOKE, STR_TITLE_TASK_NAME, STR_TITLE_TASK_DETAILS
 from collections import Counter, defaultdict
 import re
 import os
 import filecmp
 from typing import List, Dict, Any
 import statistics
+import json
 
 
 
@@ -28,7 +29,7 @@ current_dir_path = os.path.dirname(current_file_path)
 # ToDo CONFIG: setup working dir and adjust paths accordingly
 working_dir = current_dir_path
 
-do_only_call_summarize = True
+do_only_call_summarize = False
 
 # Define the number of iterations
 iterations = 10
@@ -132,18 +133,40 @@ def summarize_logfile(logfile_path):
     summary = {}
 
     # Regular expression to match lines containing 'bnchmrk'
-    pattern = re.compile(r'\b(bnchmrk_[^:]+)')
+    pattern_bnchmrk = re.compile(r'\b(bnchmrk_[^:]+)')
 
     # Initialize a counter to count occurrences of each term starting with 'bnchmrk'
     bnchmrk_counter = Counter()
 
+    task_counts = defaultdict(int)
+    
+    # Pattern to find the JSON part after "Invoking Task_Task Details:"
+    pattern_taskDetails = rf"{STR_TITLE_TASK_INVOKE}_{STR_TITLE_TASK_DETAILS}:(.*)"
+    
     # Open and read the logfile
     with open(logfile_path, 'r') as file:
         for line in file:
-            match = pattern.search(line)
-            if match:
-                term = match.group(0)
+            match_bnchmrk = pattern_bnchmrk.search(line)
+            match_taskDetails = re.search(pattern_taskDetails, line)
+            
+            # bnchmark end of iteration counter
+            if match_bnchmrk:
+                term = match_bnchmrk.group(0)
                 bnchmrk_counter[term] += 1
+            
+            # counter for invoking task
+            elif match_taskDetails:
+                json_str_taskdetails = match_taskDetails.group(1).strip()
+                try:
+                    # Parse the JSON string
+                    task_info = json.loads(json_str_taskdetails)
+                    task_name = task_info.get(STR_TITLE_TASK_NAME)
+                    if task_name:
+                        task_counts[task_name] += 1
+                except json.JSONDecodeError:
+                    # Skip lines that don't contain valid JSON
+                    continue
+
 
     total_iterations = sum(bnchmrk_counter.values())
     summary["crew_sum_bnchmrk_iterations"] = {f"{timestamp}":f"{total_iterations}"}
@@ -170,7 +193,7 @@ def summarize_logfile(logfile_path):
             percentage = (count / total_iterations) * 100
             write_log(f"{logfile_path}", f"sum_{term} = {count} ({percentage:.0f}%)")
     
-    return summary
+    return summary, task_counts
 
 # return the logfiles of named task
 def list_finished_crew_files(directory, session_id, process_finished_calls_only=True, task_name=""):
@@ -528,7 +551,20 @@ def extract_task_info(filename):
         'iteration': int(iteration) if iteration else None
     }
 
-def scan_directory_for_task_files(directory):
+import os
+
+def scan_directory_for_task_files(directory, target_timestamp=None):
+    """
+    Scan a directory for "*.md" files and parse task information.
+    
+    Args:
+        directory (str): Path to the directory to scan
+        target_timestamp (str, optional): Filter files by specific timestamp.
+                                         If None, all files are considered.
+    
+    Returns:
+        dict: Dictionary mapping task names to lists of file information
+    """
     # Initialize the result dictionary
     task_benchmark_results = {}
 
@@ -543,6 +579,11 @@ def scan_directory_for_task_files(directory):
             if task_info:
                 # Get the task name
                 task_name = task_info['task_name']
+                
+                # Filter by timestamp if target_timestamp is specified
+                if target_timestamp is not None:
+                    if task_info['timestamp'] != target_timestamp:
+                        continue  # Skip this file if timestamp doesn't match
 
                 # Initialize a list for this task if it doesn't exist
                 if task_name not in task_benchmark_results:
@@ -557,7 +598,8 @@ def scan_directory_for_task_files(directory):
 
     return task_benchmark_results
 
-summary_crew_iterations = summarize_logfile(f"{logfile_path}")
+
+summary_crew_iterations, task_invocation_counts = summarize_logfile(f"{logfile_path}")
 
 # get the task results of .md files
 '''
@@ -587,15 +629,16 @@ Sample structure of task_results
 
 task_result_directory_path = os.path.join(get_benchmark_base_path(),'task_result_outputDir')
 '''
-Sample of task_results:
+All files in dir, also from different benchmark timestamps are listed. Sample of task_results:
 timestamp equals sessionID
 {
 'web_searching': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_web_searching_it_3.md'},...
 'search_terms': [{'timestamp': '25-07-2025_19-51-11', 'iteration': 1, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_search_terms_it_1.md'}, {'timestamp': '25-07-2025_19-51-11', 'iteration': 3, 'filepath': '/my/path/task_benchmark_25-07-2025_19-51-11-task_name_search_terms_it_3.md'},...
 }
 '''
-task_results = scan_directory_for_task_files(task_result_directory_path)
-# print(f"task_results:{task_results}")
+task_results = scan_directory_for_task_files(task_result_directory_path, target_timestamp=timestamp)
+print(f"task_results:{task_results}")
+
 # get task_names and check which ones to analyse
 # analyse only tasks where we find an "expected_output_<session_id>_<task_name>....log file"
 '''
@@ -738,9 +781,12 @@ for task_dict in task_list_dicts:
     print(task_dict)
     task_name = task_dict.get("TASK_NAME")
     print(f"Task Name: {task_name}")
+    task_invocation_count = task_invocation_counts.get(task_name, None)
+    print(f"TASK_INVOCATION_COUNT:{task_name}: {task_invocation_count}")
     task_result_info = task_results.get(task_name)
-    # print(f"Task Results: \n{task_result_info}")
-    
+    all_task_results_compiled["task_calls"] = {f"{timestamp}":f"{task_invocation_count}"}
+    print(f"Task Results: \n{task_result_info}")
+
     # add all other parameter from the task_dict
     for k, v in task_dict.items():
         if k != "TASK_NAME":
@@ -765,6 +811,7 @@ for task_dict in task_list_dicts:
     print(f"Task output matching: {true_count}")
     print(f"Task output mismatch: {false_count}")
 
+
     # ToDo add the task_stability to the stats
     task_llm_response_errors = task_stability.get(task_name, None)
     if task_llm_response_errors:
@@ -787,8 +834,8 @@ for task_dict in task_list_dicts:
         for ik, iv in total_iterations_dict.items():
             total_iterations = int(iv)
             
-        print(f"task_sum_llm_err_count /  total_iterations * 100: {task_sum_llm_err_count} /  {total_iterations} * 100")
-        llm_instability_score_p = task_sum_llm_err_count /  total_iterations * 100
+        print(f"task_sum_llm_err_count /  task_invocation_count * 100: {task_sum_llm_err_count} /  {task_invocation_count} * 100")
+        llm_instability_score_p = task_sum_llm_err_count /  task_invocation_count * 100
         llm_stability_score_p = 100-llm_instability_score_p
         all_task_results_compiled["LLM Response Stability"] = {f"{timestamp}":f"{llm_stability_score_p}%"}
         
@@ -875,7 +922,18 @@ metric_lut["crew_duration"] =                           "Duration"
 
 metric_lut["task_model_name"] =        "Model Name"
 metric_lut["task_model_temp"] =        "Model Temp"
+metric_lut["task_model_seed"] =  "Model seed"
+metric_lut["task_model_freq_penalty"] =  "Model Freq.Penalty"
+metric_lut["task_model_top_k"] =  "Model Top_K"
 metric_lut["task_tool_usage_calls"] =  "Tool calls"
+metric_lut["task_tool_usage_pass%"] =  "Tool use correct %"
+metric_lut["task_tool_usage_pass#"] =  "Tool use correct #"
+metric_lut["task_tool_usage_fail%"] =  "Tool use wrong %"
+metric_lut["task_tool_usage_fail#"] =  "Tool use wrong #"
+metric_lut["task_output_matching%"] =  "Result correct %"
+metric_lut["task_output_matching#"] =  "Result correct #"
+metric_lut["task_output_mismatch%"] =  "Result false %"
+metric_lut["task_output_mismatch#"] =  "Result false #"
 
 metric_lut["LLM Instability response timeout mean_messages"] =   "LLM Instab. timeout #msg mean"
 metric_lut["LLM Instability response timeout median_messages"] = "LLM Instab. timeout #msg median"
@@ -990,8 +1048,15 @@ def dict_to_md(data):
         md_lines.append("| Metric | " + ' | '.join(all_timestamps) + " |")
         md_lines.append("|---" + "|---" * len(all_timestamps) + "|")
         
+        # Sort metrics alphabetically before processing
+        sorted_metrics = sorted(top_value.keys())
+
         # Now process each metric within this section, ensuring headers are not repeated
-        for metric, timestamps in top_value.items():
+        # for metric, timestamps in top_value.items():
+        # for metric, timestamps in sorted_metrics:
+        #     md_lines.append(f"| {metric} | " + ' | '.join(escape(timestamps.get(ts, '')) for ts in all_timestamps) + " |")
+        for metric in sorted_metrics:
+            timestamps = top_value[metric]
             md_lines.append(f"| {metric} | " + ' | '.join(escape(timestamps.get(ts, '')) for ts in all_timestamps) + " |")
     
     return '\n'.join(md_lines)
@@ -1114,5 +1179,5 @@ else:
 
 
 
-set_benchmark_session_id_mod(f"''")
-set_benchmark_log_file_path(f"''")
+#set_benchmark_session_id_mod(f"''")
+#set_benchmark_log_file_path(f"''")

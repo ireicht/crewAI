@@ -29,7 +29,7 @@ from crewai.utilities.exceptions.context_window_exceeding_exception import (
 )
 from crewai.utilities.logger import Logger
 from crewai.utilities.training_handler import CrewTrainingHandler
-from igi_helper import print_structured, write_log, get_benchmark_log_file_path, is_BenchmarkRun, get_benchmark_session_id_mod, save_response_error_file, STR_TITLE_LLM_RESPONSE_ERROR_TYPE, STR_LLM_RESPONSE_ERROR_TYPE_EMPTY, STR_LLM_RESPONSE_ERROR_TYPE_TIMEOUT, STR_TITLE_LLM_NAME, STR_TITLE_BENCHMARK_SESSION_ID, STR_TITLE_NUM_OF_MESSAGES, STR_TITLE_TASK_NAME
+from igi_helper import print_structured, write_log, get_benchmark_log_file_path, is_BenchmarkRun, get_benchmark_session_id_mod, save_response_error_file, STR_TITLE_LLM_RESPONSE_ERROR_TYPE, STR_LLM_RESPONSE_ERROR_TYPE_EMPTY, STR_LLM_RESPONSE_ERROR_TYPE_TIMEOUT, STR_TITLE_LLM_NAME, STR_TITLE_BENCHMARK_SESSION_ID, STR_TITLE_NUM_OF_MESSAGES, STR_TITLE_TASK_NAME, STR_TITLE_TASK_INVOKE, STR_TITLE_TASK_DETAILS
 import sys
 
 @dataclass
@@ -106,8 +106,12 @@ class CrewAgentExecutor(CrewAgentExecutorMixin):
         self.ask_for_human_input = bool(inputs.get("ask_for_human_input", False))
 
         try:
-            print(f"\nINVOKING LOOP....\n")
-            
+            print(f"\nINVOKING LOOP....Task:{self.task.name}\n")
+            task_info = {
+                STR_TITLE_TASK_NAME: f"{self.task.name}"
+            }
+            task_info_str = json.dumps(task_info)
+            write_log(get_benchmark_log_file_path(),f"{STR_TITLE_TASK_INVOKE}_{STR_TITLE_TASK_DETAILS}:{task_info_str}")
             formatted_answer = self._invoke_loop()
         except AssertionError:
             self._printer.print(

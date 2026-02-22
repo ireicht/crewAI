@@ -10,7 +10,7 @@ search_terms_task:
     "AI LLMs powered virtual assistants market trends forecast 2025"
     
   expected_output: >
-    list of {min_number_of_search_queries} search terms. Make sure you write the complete answer after the indictor "Final Answer:"
+    list of {min_number_of_search_queries} search terms. Do not add any explanation or interpretation to your answer. Make sure you write the complete answer after the indictor "Final Answer:"
   agent: topic_engineer
 
 web_search_task:

@@ -100,7 +100,7 @@ class MySearchCrew():
 				agent_action_log_file = f"benchmark_{benchmark_SESSION_ID}_TASK_NAME_{taskName}_action_call_it_{benchmark_iteration_cnt}.log"
 				agent_action_log_file_path = os.path.join(get_benchmark_logs_dir_path(),agent_action_log_file)
 		
-				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}") if is_BenchmarkRun else None
+				write_log(agent_action_log_file_path,f"\nAGENT_USED_TOOL:{output.tool}\nAGENT_USED_TOOL_INPUT:{output.tool_input}") if is_BenchmarkRun() else None
 				# write_log(agent_action_log_file_path,f"\MyTaskName:{taskName} Agent-LLM:{myAgent.llm.model}")
 				
 		elif isinstance(output, AgentFinish):
@@ -138,7 +138,7 @@ class MySearchCrew():
 		myllm_minicpm = LLM(api_key="fsdf", model="openai/minicpm-o-2_6",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, frequency_penalty=2.0)
 		myllm_watt_8b = LLM(api_key="fsdf", model="openai/watt-tool-8b",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, frequency_penalty=2.0)
 		myllm_gorilla = LLM(api_key="fsdf", model="openai/gorilla-openfunctions-v2",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, frequency_penalty=2.0)
-		myllm_granite = LLM(api_key="fsdf", model="openai/granite-4.0-h-tiny-mlx",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, seed=42, frequency_penalty=2.0)
+		myllm_granite = LLM(api_key="fsdf", model="openai/granite-4.0-h-tiny-mlx",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, seed=42, frequency_penalty=2.0, timeout=45)
 		# myllm_granite = LLM(api_key="fsdf", model="openai/granite-3.2-8b-instruct",  base_url="http://localhost:1234/v1", temperature=0.0, max_tokens=18000, seed=42, frequency_penalty=2.0)
 
 		# llm = LLM(api_key="fsdf", model="openai/deepseek-r1-distill-qwen-32b-mlx",  base_url="http://localhost:1234/v1", temperature=0.7)
@@ -158,8 +158,10 @@ class MySearchCrew():
 			verbose=True,
 			# step_callback=self.my_researcher_stepCallback,
 			# tools=[myDuckDuckGoSearchTool()],
-			llm=self.myllm_granite
+			# llm=self.myllm_granite
 			# llm=self.myllm_llama3_8b
+			llm=self.myllm_granite
+			
 		)
 
 
@@ -171,6 +173,7 @@ class MySearchCrew():
 			tools=[myDuckDuckGoSearchTool()],
 			# step_callback=self.my_researcher_stepCallback,
 			# llm=self.myllm_r1_d_llama
+			# llm=self.myllm_llama3_8b_duckduckGoSearch
 			llm=self.myllm_llama3_8b_duckduckGoSearch
 		)
 		# myAgent.step_callback = partial(self.my_researcher_stepCallback, myAgent)

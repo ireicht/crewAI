@@ -13,6 +13,8 @@ STR_TITLE_LLM_NAME = "Model Name"
 STR_TITLE_BENCHMARK_SESSION_ID = "Session ID"
 STR_TITLE_NUM_OF_MESSAGES = "Number of Messages"
 STR_TITLE_TASK_NAME = "Task Name"
+STR_TITLE_TASK_INVOKE = "Invoking Task"
+STR_TITLE_TASK_DETAILS = "Task Details"
 
 RESPONSE_ERR_INFO_PREFIX = "llm_resp_failinfo_"
 # Function to read JSON configuration file
