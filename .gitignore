@@ -26,3 +26,5 @@ test_flow.html
 crewairules.mdc
 plan.md
 conceptual_plan.md
+src/benchmark_results/logs/
+src/benchmark_results/task_result_outputDir/
