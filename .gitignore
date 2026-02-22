@@ -28,3 +28,4 @@ plan.md
 conceptual_plan.md
 src/benchmark_results/logs/
 src/benchmark_results/task_result_outputDir/
+benchmark_tmp.json

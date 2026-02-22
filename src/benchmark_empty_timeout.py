@@ -1179,5 +1179,5 @@ else:
 
 
 
-#set_benchmark_session_id_mod(f"''")
-#set_benchmark_log_file_path(f"''")
+set_benchmark_session_id_mod(f"''")
+set_benchmark_log_file_path(f"''")
