@@ -1,7 +1,7 @@
 {
-    "BENCHMARK_SESSION_ID_MOD": "22-02-2026_21-27-43",
+    "BENCHMARK_SESSION_ID_MOD": "",
     "BENCHMARK_BASE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results",
-    "BENCHMARK_LOG_FILE_PATH": "/Users/reicht/Developer/onTheGo/crewai_repo_dev/repo_code_dev/crewAIreicht/src/benchmark_results/logs/benchmark_22-02-2026_21-27-43.log",
+    "BENCHMARK_LOG_FILE_PATH": "",
     "crew_iteration": "10",
     "task_details": [
         "TASK_NAME:search_terms TASK_MODEL_NAME:openai/granite-4.0-h-tiny-mlx TASK_MODEL_TEMP:0.0 TASK_MODEL_SEED:42 TASK_MODEL_FREQ_PENALTY:2.0 TASK_MODEL_TOP_K:None",
